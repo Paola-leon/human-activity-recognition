@@ -1,3 +1,49 @@
+# --- Datos (pesados, se distribuyen fuera de git) ---
 datos/
 datos_unzipped/
-datos_unzipped/
+
+# --- Entorno de Python / uv ---
+# pyproject.toml, uv.lock y .python-version SÍ se versionan
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+# _cache/ se versiona a propósito (CSV de los escaneos del EDA); cualquier otro archivo ahí, no
+notebooks/_cache/*
+!notebooks/_cache/*.csv
+
+# --- Modelos y resultados de entrenamiento ---
+*.pt
+*.pth
+*.ckpt
+checkpoints/
+runs/
+lightning_logs/
+wandb/
+mlruns/
+
+# --- Secretos y configuración local ---
+.env
+.env.*
+
+# --- Herramientas ---
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# --- Editores ---
+.vscode/
+.idea/
+*.swp
+
+# --- Sistema operativo ---
+.DS_Store
+._*
+Thumbs.db
+desktop.ini

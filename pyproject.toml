@@ -1,0 +1,44 @@
+[project]
+name = "human-activity-recognition"
+version = "0.1.0"
+description = "Reconocimiento de actividad humana (EMG / MVNX) con Contrastive Predictive Coding"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "numpy>=2.1",
+    "pandas>=2.2",
+    "matplotlib>=3.9",
+    "scipy>=1.14",
+    "scikit-learn>=1.5",
+    "jupyterlab>=4.2",
+    "ipykernel>=6.29",
+    "openpyxl>=3.1.5",
+]
+
+# PyTorch se instala eligiendo UNO de estos extras (ver documentacion/GUIA_UV.md):
+#   uv sync --extra cpu     -> Mac (usa MPS en Apple Silicon) o equipos sin GPU NVIDIA
+#   uv sync --extra cu128   -> Linux/Windows con GPU NVIDIA (CUDA 12.8, driver >= 570)
+[project.optional-dependencies]
+cpu = ["torch==2.11.*"]
+cu128 = ["torch==2.11.*"]
+
+[tool.uv]
+# No es un paquete instalable: solo gestionamos el entorno.
+package = false
+conflicts = [[{ extra = "cpu" }, { extra = "cu128" }]]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", extra = "cpu", marker = "sys_platform != 'darwin'" },
+    { index = "pytorch-cu128", extra = "cu128", marker = "sys_platform != 'darwin'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
