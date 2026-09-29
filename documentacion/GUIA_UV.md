@@ -55,6 +55,8 @@ Verifica la instalación:
 uv run python -c "import torch; print(torch.__version__, 'CUDA:', torch.cuda.is_available(), 'MPS:', torch.backends.mps.is_available())"
 ```
 
+> 📁 **Datos:** para ejecutar los notebooks también necesitas descargar los datos y colocarlos en `datos/` y `datos_unzipped/`. La estructura exacta está en la sección **Datos** del [README](../README.md#datos).
+
 > ⚠️ **Siempre incluye tu extra al hacer `uv sync`.** Un `uv sync` sin `--extra` elimina torch del entorno (sync deja el entorno *exactamente* igual a lo pedido). Si te pasa, vuelve a correr `uv sync --extra cpu` (o `cu128`).
 
 ## 3. Uso diario
