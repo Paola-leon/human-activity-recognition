@@ -1,3 +1,4 @@
+tmp_*/
 # --- Datos (pesados, se distribuyen fuera de git) ---
 datos/
 datos_unzipped/
