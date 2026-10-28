@@ -6,7 +6,7 @@
 
 - **Goal:** recognize seven manual material handling activities from body-worn sensors.
 - **Path so far:** we started with the muscle signal of the arms (sEMG) and a network with self-supervised pretraining (CPC). The sEMG plateaued at a macro F1 of ≈ 0.44–0.49. Adding full-body motion capture (MVNX) raised performance to ≈ 0.88, and the sEMG added nothing further. Since then we have worked with MVNX only.
-- **Current status:** with MVNX, the Random Forest achieves the best macro F1 (0.894), and the network with CPC pretraining comes very close (0.878), with the lowest variation across people. The network learns, without labels, a representation that already recognizes the activities (0.820 with a linear classifier); its advantage when labels are scarce has yet to be evaluated.
+- **Current status:** with MVNX, the Random Forest achieves the best macro F1 (0.894), and the network with CPC pretraining comes very close (0.878), with the lowest variation across people. The network learns, without labels, a representation that already recognizes the activities (0.820 with a linear classifier).
 - **Evaluation:** every experiment uses leave-one-subject-out (LOSO) validation on subjects 1–12. Subjects 13 and 14 are reserved for the final test and have not been used.
 
 | Code | Activity |
@@ -259,23 +259,17 @@ Phase 2 · Classification:     movement → network → activity at the current 
 
 ![Contribution of each phase of the GRU network vs. the Random Forest](figures_en/f1_contribution_per_phase.png)
 
-**Why the Random Forest wins in this scenario.** All training data are labeled, so the Random Forest makes use of all the available information. The expected advantage of CPC lies in the opposite scenario: lots of recorded movement and few annotations, which is the typical situation when deploying the system in a real setting. Haresamudram et al. (2020) report that, with all labels available, CPC performs on par with conventional training, and that its advantage appears when labels are scarce. We have not yet evaluated that scenario.
+**Why the Random Forest wins in this scenario.** All training data are labeled, so the Random Forest makes use of all the available information. The expected advantage of CPC lies in the opposite scenario: lots of recorded movement and few annotations, which is the typical situation when deploying the system in a real setting. Haresamudram et al. (2020) report that, with all labels available, CPC performs on par with conventional training, and that its advantage appears when labels are scarce.
 
 ¹ *The network weights were learned without labels; labels were used only to choose the pretraining epoch and to train the linear classifier.*
 
-### Next step: experiment with few labels
+### Next step: Contrastive Active Inference
 
-To test whether CPC adds value over the Random Forest, we will replicate the label-efficiency experiment from the paper:
-
-- **CPC:** pretrained on all the training data, ignoring the labels.
-- **Compared models:** frozen CPC with a small classifier, the same network without pretraining, the GRU from scratch, and the Random Forest.
-- **Labeled data:** each model receives only **1, 5, 10, 25, 50 and 100 labeled windows per class**.
-- **Evaluation:** macro F1 under LOSO is compared for each amount of labels.
-
-If CPC outperforms the Random Forest with few labels, the network becomes the recommended option for real-world use, where annotating is costly. If not, the Random Forest remains the final model.
+We still plan to test the **Contrastive Active Inference** approach (Mazzaglia et al., 2021). It proposes a contrastive objective for an agent to learn its internal model of the world, at a lower computational cost than likelihood-based methods. We will evaluate it as a self-supervised alternative to CPC pretraining and compare its results with those obtained so far (Random Forest and networks with CPC), using the same windows, the same 12 LOSO rounds and the same metric.
 
 ---
 
 ## References
 
 - Haresamudram, H., Essa, I., & Plötz, T. (2020). Contrastive predictive coding for human activity recognition. *arXiv:2012.05333*. https://arxiv.org/abs/2012.05333
+- Mazzaglia, P., Verbelen, T., & Dhoedt, B. (2021). Contrastive active inference. *Advances in Neural Information Processing Systems, 34* (NeurIPS 2021). https://arxiv.org/abs/2110.10083
