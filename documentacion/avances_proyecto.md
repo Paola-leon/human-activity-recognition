@@ -6,7 +6,7 @@
 
 - **Objetivo:** reconocer siete actividades de manejo manual de cargas a partir de sensores corporales.
 - **Trayectoria:** empezamos con la señal muscular de los brazos (sEMG) y una red con preentrenamiento autosupervisado (CPC). La sEMG se quedó en un F1 macro de ≈ 0.44–0.49. Al incorporar la captura de movimiento de cuerpo completo (MVNX), el desempeño subió a ≈ 0.88, y la sEMG no aportó nada adicional. Desde entonces trabajamos solo con MVNX.
-- **Estado actual:** con MVNX, el Random Forest obtiene el mejor F1 macro (0.894), y la red con preentrenamiento CPC queda muy cerca (0.878), con la menor variación entre personas. La red aprende sin etiquetas una representación que ya reconoce las actividades (0.820 con un clasificador lineal); falta evaluar su ventaja cuando las etiquetas son escasas.
+- **Estado actual:** con MVNX, el Random Forest obtiene el mejor F1 macro (0.894), y la red con preentrenamiento CPC queda muy cerca (0.878), con la menor variación entre personas. La red aprende sin etiquetas una representación que ya reconoce las actividades (0.820 con un clasificador lineal).
 - **Evaluación:** en todos los experimentos se deja un sujeto fuera (LOSO) con los sujetos 1–12. Los sujetos 13 y 14 están reservados para la prueba final y no se han usado.
 
 | Código | Actividad |
@@ -259,23 +259,17 @@ Fase 2 · Clasificación:        movimiento → red → actividad en el instante
 
 ![Aporte de cada fase de la red GRU frente al Random Forest](figuras/f1_aporte_por_fase.png)
 
-**Por qué el Random Forest gana en este escenario.** Todos los datos de entrenamiento están etiquetados, así que el Random Forest aprovecha toda la información disponible. La ventaja esperada de CPC está en el escenario opuesto: mucho movimiento grabado y pocas anotaciones, que es la situación típica al llevar el sistema a un entorno real. Haresamudram et al. (2020) reportan que, con todas las etiquetas, CPC queda a la par del entrenamiento convencional, y que su ventaja aparece cuando las etiquetas son escasas. Ese escenario todavía no lo hemos evaluado.
+**Por qué el Random Forest gana en este escenario.** Todos los datos de entrenamiento están etiquetados, así que el Random Forest aprovecha toda la información disponible. La ventaja esperada de CPC está en el escenario opuesto: mucho movimiento grabado y pocas anotaciones, que es la situación típica al llevar el sistema a un entorno real. Haresamudram et al. (2020) reportan que, con todas las etiquetas, CPC queda a la par del entrenamiento convencional, y que su ventaja aparece cuando las etiquetas son escasas.
 
 ¹ *Los pesos de la red se aprendieron sin etiquetas; las etiquetas se usaron solo para elegir la época del preentrenamiento y para entrenar el clasificador lineal.*
 
-### Siguiente paso: experimento con pocas etiquetas
+### Siguiente paso: Contrastive Active Inference
 
-Para comprobar si CPC aporta frente al Random Forest, se replicará el experimento de eficiencia de etiquetas del artículo:
-
-- **CPC:** se preentrena con todos los datos de entrenamiento, ignorando las etiquetas.
-- **Modelos comparados:** CPC congelado con un clasificador pequeño, la misma red sin preentrenar, la GRU desde cero y el Random Forest.
-- **Datos etiquetados:** cada modelo recibe solo **1, 5, 10, 25, 50 y 100 ventanas etiquetadas por clase**.
-- **Evaluación:** se compara el F1 macro en LOSO para cada cantidad de etiquetas.
-
-Si CPC supera al Random Forest con pocas etiquetas, la red se convierte en la opción recomendada para un uso real, donde anotar es costoso. Si no, el Random Forest se mantiene como modelo final.
+Tenemos pendiente probar el enfoque de **Contrastive Active Inference** (Mazzaglia et al., 2021). Propone un objetivo contrastivo para que un agente aprenda su modelo interno del mundo, con menos costo computacional que los métodos basados en verosimilitud. Lo evaluaremos como alternativa autosupervisada al preentrenamiento CPC y compararemos sus resultados con los obtenidos hasta ahora (Random Forest y redes con CPC), con las mismas ventanas, las mismas 12 rondas LOSO y la misma métrica.
 
 ---
 
 ## Referencias
 
 - Haresamudram, H., Essa, I., & Plötz, T. (2020). Contrastive predictive coding for human activity recognition. *arXiv:2012.05333*. https://arxiv.org/abs/2012.05333
+- Mazzaglia, P., Verbelen, T., & Dhoedt, B. (2021). Contrastive active inference. *Advances in Neural Information Processing Systems, 34* (NeurIPS 2021). https://arxiv.org/abs/2110.10083
