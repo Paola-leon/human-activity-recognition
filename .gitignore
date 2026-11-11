@@ -54,3 +54,19 @@ documentacion/~$ance1_EDA.docx
 
 # --- Archivos temporales de Office ---
 ~$*
+
+# --- LaTeX (archivos auxiliares de compilación) ---
+Articulo/*.aux
+Articulo/*.bbl
+Articulo/*.bcf
+Articulo/*.blg
+Articulo/*.fdb_latexmk
+Articulo/*.fls
+Articulo/*.log
+Articulo/*.out
+Articulo/*.run.xml
+Articulo/*.synctex.gz
+Articulo/*.toc
+Articulo/*.lof
+Articulo/*.lot
+Articulo/articulo_vista_previa.pdf
