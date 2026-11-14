@@ -73,7 +73,7 @@
 % --- Resumen ---
 \begin{abstract}
 \noindent
-Reconocer automáticamente las actividades de manejo manual de cargas es el primer paso para evaluar su riesgo ergonómico, pero los modelos supervisados exigen anotar cada actividad, y esa anotación es la parte más cara de llevar un sistema a una planta. Este trabajo de investigación evalúa si la codificación predictiva contrastiva (CPC), un preentrenamiento que aprende sin etiquetas, reduce esa dependencia. Se usó un conjunto público de 14 personas que realizan siete actividades con cargas de 2 a 12~kg, registradas con electromiografía de superficie (sEMG) y con un traje inercial de 17 sensores. Todos los modelos se evaluaron dejando fuera a una persona a la vez (LOSO) con los sujetos 1--12. La sEMG del brazo se quedó en un F1 macro de 0.44--0.49, mientras que la captura de movimiento alcanzó 0.88--0.89, por lo que el proyecto se reorientó hacia el movimiento. El modelo final es una red CPC con encoder convolucional causal y GRU, que usa 10 variables de 11 sensores inerciales. Con todas las etiquetas obtiene un F1 macro de $0.873 \pm 0.036$, cerca del Random Forest de referencia ($0.892$). Con 10 ventanas etiquetadas por actividad o menos, lo supera por 0.04 a 0.11 de F1 en 11 o 12 de los 12 sujetos, una ventaja que se debe al preentrenamiento y que equivale a usar alrededor de la mitad de las etiquetas. Se recomienda CPC cuando hay mucho movimiento registrado y pocas anotaciones; la evaluación con los dos sujetos reservados sigue pendiente.
+Reconocer automáticamente las actividades de manejo manual de cargas es el primer paso para evaluar su riesgo ergonómico, pero los modelos supervisados exigen anotar cada actividad, y esa anotación es la parte más cara de llevar un sistema a una planta. Este trabajo de investigación evalúa si la codificación predictiva contrastiva (CPC), un preentrenamiento que aprende sin etiquetas, reduce esa dependencia. Se usó un conjunto público de 14 personas que realizan siete actividades con cargas de 2 a 12~kg, registradas con electromiografía de superficie (sEMG) y con un traje inercial de 17 sensores (MVNX). Todos los modelos se evaluaron dejando fuera a una persona a la vez (LOSO) con los sujetos 1--12. La sEMG del brazo se quedó en un F1 macro de 0.44--0.49, mientras que la captura de movimiento alcanzó 0.88--0.89, por lo que el proyecto se reorientó hacia el movimiento. El modelo final es una red CPC con encoder convolucional causal y GRU, que usa 10 variables de 11 sensores inerciales. Con todas las etiquetas obtiene un F1 macro de $0.873 \pm 0.036$, cerca del Random Forest de referencia ($0.892$). Con 10 ventanas etiquetadas por actividad o menos, lo supera por 0.04 a 0.11 de F1 en 11 o 12 de los 12 sujetos, una ventaja que se debe al preentrenamiento y que equivale a usar alrededor de la mitad de las etiquetas. Se recomienda CPC cuando hay mucho movimiento registrado y pocas anotaciones; la evaluación con los dos sujetos reservados sigue pendiente.
 \end{abstract}
 
 \noindent\textbf{Palabras clave:} reconocimiento de actividades humanas, aprendizaje autosupervisado, codificación predictiva contrastiva, sensores inerciales, ergonomía.
@@ -88,6 +88,8 @@ El manejo manual de cargas (levantar, sostener, transportar y colocar objetos) e
 El reconocimiento de actividades humanas (HAR, por sus siglas en inglés) con sensores corporales permite automatizarla. Sin embargo, los modelos supervisados dependen de grandes volúmenes de datos anotados. En HAR, grabar horas de movimiento es barato, pero etiquetarlas instante por instante es caro \parencite{haresamudram2021}. Por eso conviene preguntarse si un modelo puede aprender primero de los datos sin etiquetar y necesitar después pocas anotaciones.
 
 La codificación predictiva contrastiva (CPC) \parencite{vandenoord2018} responde a esa necesidad. Una red aprende a representar una señal resolviendo una tarea que no requiere etiquetas: a partir del pasado, reconocer cuál es el futuro real entre varios candidatos. \textcite{haresamudram2021} la aplicaron a HAR con acelerómetros y reportaron que, con todas las etiquetas, CPC queda a la par del entrenamiento supervisado, y que su ventaja aparece cuando las etiquetas escasean.
+
+Los datos de este trabajo provienen del \emph{Manual Material Handling Dataset} \parencite{bassani2021dataset}, generado por Bassani, Filippeschi y Avizzano en su laboratorio. Los mismos autores publicaron después un estudio en el que entrenan modelos supervisados de aprendizaje profundo con esa base para reconocer las mismas siete actividades \parencite{bassani2025}. Por eso, a lo largo del proyecto, ese artículo sirve como \textbf{marco de referencia} de lo que logra un modelo supervisado con estos datos, y como punto de comparación para el enfoque autosupervisado con CPC.
 
 \subsection{Pregunta de investigación y objetivos}
 Este proyecto no resuelve un problema de negocio definido por un cliente: es un trabajo de investigación aplicada. La pregunta que lo guía es:
@@ -104,10 +106,17 @@ Este proyecto no resuelve un problema de negocio definido por un cliente: es un 
   \item medir el desempeño de CPC frente al modelo supervisado cuando sólo se dispone de pocas ventanas etiquetadas.
 \end{enumerate}
 
-\subsection{Cambio de enfoque}
-El planteamiento inicial (Avance~0) proponía aplicar CPC con redes recurrentes xLSTM \parencite{beck2024} a la \emph{electromiografía de superficie} (sEMG) de los brazos. Los Avances~1 a~3 mostraron que la sEMG, por sí sola, se queda en un F1 macro de 0.44--0.49 con cualquier modelo (Sección~\ref{sec:semg}). La sEMG mide \emph{cuánto} esfuerzo hace el músculo, pero no \emph{dónde} está el cuerpo, y levantar desde el piso o desde la mesa activa los mismos músculos. Al incorporar la captura de movimiento de cuerpo completo, el F1 subió a $\approx 0.88$, y la sEMG dejó de aportar información medible (Sección~\ref{sec:fuente}).
+\subsection{Evolución del enfoque}
+El conjunto de datos reúne dos fuentes de información complementarias: la \emph{captura de movimiento} de cuerpo completo (MVNX), que describe la postura y el desplazamiento del cuerpo, y la \emph{electromiografía de superficie} (sEMG) de los brazos, que mide la activación muscular. El proyecto partió de la sEMG, con CPC y redes recurrentes xLSTM \parencite{beck2024} como propuesta inicial (Avance~0).
 
-El enfoque adoptado finalmente fue: \textbf{CPC con red de contexto GRU sobre variables de movimiento}, reducidas después a las que pueden medir 11 sensores inerciales, con el énfasis en el escenario de \textbf{pocas etiquetas}. La xLSTM se conservó como candidata en la comparación de modelos, pero no fue la mejor opción.
+A lo largo del proyecto se exploraron distintos modelos, siempre desde la perspectiva de CPC, con distintas combinaciones de variables. Así se pudo determinar cuáles describen mejor la actividad. Cada fuente aporta información distinta:
+\begin{itemize}
+  \item la sEMG indica \emph{cuánto} esfuerzo hace el músculo;
+  \item el movimiento indica \emph{dónde} está el cuerpo.
+\end{itemize}
+Por eso el movimiento distingue actividades que activan los mismos músculos, como levantar una carga desde el piso o tomarla de una mesa. Con la sEMG sola, los modelos alcanzaron un F1 macro de 0.44--0.49 (Sección~\ref{sec:semg}). Al incorporar el movimiento, el F1 subió a $\approx 0.88$, y agregar la sEMG al movimiento no mejoró el resultado de forma medible (Sección~\ref{sec:fuente}).
+
+El enfoque resultante es \textbf{CPC con red de contexto GRU sobre variables de movimiento}. Esas variables se redujeron a las que pueden medir 11 sensores inerciales, y el énfasis está en el escenario de \textbf{pocas etiquetas}.
 
 % =====================================================================
 \section{Datos y preparación}
@@ -166,7 +175,7 @@ Las señales se filtraron con un pasa-bajas de fase cero a 4.8~Hz y se remuestre
 
 \textbf{Escalado.} Cada variable se recorta en sus cuantiles 0.1\,\% y 99.9\,\% y se escala como $(x - \text{mediana})/(q_{95} - q_{5})$; los contactos de los pies (0/1) no se modifican. El escalador se ajusta en cada ronda sólo con los sujetos de entrenamiento.
 
-\textbf{Protocolo.} Todos los experimentos usan validación cruzada \textbf{dejando un sujeto fuera} (LOSO) con los sujetos 1--12. En cada una de las 12 rondas, un sujeto se evalúa, el siguiente de la lista sirve de validación interna (parada temprana y elección de hiperparámetros) y los 10 restantes entrenan. Así, el sujeto evaluado no interviene en ninguna decisión del entrenamiento. Los \textbf{sujetos 13 y 14 se reservaron} para una prueba final que todavía no se realiza.
+\textbf{Protocolo.} Todos los experimentos usan validación cruzada \textbf{dejando un sujeto fuera} (LOSO) con los sujetos 1--12. En cada una de las 12 rondas, un sujeto se evalúa, el siguiente de la lista sirve de validación interna (parada temprana y elección de hiperparámetros) y los 10 restantes entrenan. Así, el sujeto evaluado no interviene en ninguna decisión del entrenamiento.\footnote{Este protocolo difiere del de \textcite{bassani2025}. Su resultado con una persona nueva proviene de entrenar con 13 sujetos y evaluar sólo en el sujeto~11, con ventanas de 1~s a 240~Hz y 10 señales (8 de movimiento y 2 de sEMG); su cifra corresponde a una sola persona, y la nuestra a la media de 12 con 3 sujetos menos de entrenamiento. Su partición aleatoria 70--30 mezcla a las mismas personas en entrenamiento y prueba, por lo que no mide el desempeño con personas nuevas (Anexo~\ref{anx:bassani}).} Los \textbf{sujetos 13 y 14 se reservaron} durante el desarrollo; sólo la réplica del protocolo del artículo de referencia (Sección~\ref{sec:complementarias}) los incluye.
 
 \textbf{Métrica.} La métrica principal es el \textbf{F1 macro por sujeto}, que da el mismo peso a las siete actividades pese al desbalance. Se reportan la media, la desviación entre sujetos y el peor sujeto. Las comparaciones se hacen emparejadas por sujeto con la prueba de Wilcoxon \parencite{wilcoxon1945} y, cuando hay comparaciones múltiples, con la corrección de \textcite{holm1979}.
 
@@ -218,35 +227,31 @@ Para clasificar se descarta el predictor y se agrega una \textbf{cabeza lineal} 
 \label{fig:arquitectura}
 \end{figure}
 
-\subsection{Baseline con sEMG (Avance 3)}
+\subsection{Baselines supervisados sobre cada fuente}
 \label{sec:semg}
-Antes de probar CPC se midió cuánto se logra sin aprendizaje profundo. La Tabla~\ref{tab:baseline} resume los modelos de referencia sobre las 202 características de la sEMG. El mejor baseline fue un Random Forest \parencite{breiman2001} de 200 árboles con las características \textbf{estandarizadas por sujeto} (a cada persona se le restan su media y su desviación, calculadas sin etiquetas). La estandarización corrigió parte de las diferencias entre personas y mejoró en 11 de 12 sujetos.
+Antes de evaluar CPC se fijó qué logra un modelo supervisado con cada fuente de información (Tabla~\ref{tab:baseline}). Con la sEMG, cinco modelos clásicos sobre 202 características por ventana se detuvieron entre 0.40 y 0.49; el mejor fue un Random Forest \parencite{breiman2001} con las características estandarizadas por sujeto. Que modelos tan distintos coincidieran en ese rango indicó que \textbf{el límite estaba en la señal, no en el modelo}. En cambio, con las variables de movimiento el mismo tipo de modelo sube a 0.894, casi el doble, y queda en el mismo nivel que el 0.903 que \textcite{bassani2025} obtienen con su sujeto nuevo, aunque con otro protocolo. En conjunto, estas referencias fijan el reto del proyecto: un modelo preentrenado sin etiquetas con CPC debe alcanzar el nivel de los modelos supervisados con movimiento, incluido el del artículo de referencia, y superarlos cuando las etiquetas escasean.
 
 \begin{table}[H]
   \centering
   \small
-  \caption{Baseline con sEMG (LOSO, 12 sujetos). Todos los modelos superan al azar en los 12 sujetos ($p < 0.001$). Fuente: Avance~3 y notebook~07.}
+  \caption{Baselines supervisados por fuente de información. Las cifras de este proyecto se obtuvieron con LOSO sobre los sujetos 1--12; las del artículo de referencia, con su protocolo. Fuente: Avances~3 y~4, notebooks~07 y~10.}
   \label{tab:baseline}
-  \begin{tabular}{lcc}
+  \begin{tabular}{p{9.0cm}c>{\raggedright\arraybackslash}p{3.4cm}}
     \toprule
-    Modelo (sEMG, 8 canales) & F1 macro & F1 en entrenamiento \\
+    Fuente y modelo & F1 macro & Evaluación \\
     \midrule
-    Azar estratificado                                & 0.143 & --- \\
-    Regresión logística                               & 0.398 & 0.49 \\
-    Regresión logística con \emph{splines}            & 0.418 & --- \\
-    Gradient Boosting                                 & 0.44  & 0.84 \\
-    Random Forest                                     & 0.457 & 0.93 \\
-    \textbf{Random Forest con estandarización por sujeto} & \textbf{0.485} $\pm$ 0.042 & --- \\
-    sLSTM con CPC y ajuste fino (dos semillas)        & 0.437 $\pm$ 0.066 & --- \\
+    Azar estratificado & 0.143 & LOSO, 12 sujetos \\
+    sEMG (8 canales): Random Forest con estandarización por sujeto & 0.485 $\pm$ 0.042 & LOSO, 12 sujetos \\
+    Movimiento (30 variables): \textbf{Random Forest} & \textbf{0.894} $\pm$ 0.026 & LOSO, 12 sujetos \\
+    \textcite{bassani2025} (8 de movimiento y 2 de sEMG): \textbf{BiLSTM} & \textbf{0.903} & Sujeto 11 \\
+    \textcite{bassani2025}: partición aleatoria 70--30 & 0.957 & Personas mezcladas \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-La brecha entre entrenamiento (0.93) y prueba (0.46) del Random Forest indica que memoriza a las personas de entrenamiento; regularizar más los árboles redujo esa brecha, pero no mejoró el resultado en sujetos nuevos. La mejor red CPC sobre la sEMG (sLSTM con horizonte de 1~s) quedó en el mismo rango que el baseline. Que modelos tan distintos se detengan en 0.44--0.49 indicó que \textbf{el límite estaba en la señal, no en el modelo}.
-
-\subsection{Cambio de fuente: sEMG, movimiento o ambas}
+\subsection{Selección del conjunto de variables}
 \label{sec:fuente}
-Para decidir la fuente se entrenó la misma red (sLSTM con CPC y ajuste fino) sobre los mismos ensayos y rondas LOSO, cambiando sólo la entrada (Tabla~\ref{tab:fuente} y Figura~\ref{fig:cm_fuente}).
+Los baselines indican que el movimiento contiene mucha más información que la sEMG, pero no qué variables conviene darle a CPC. Para responderlo, primero se comparó la fuente: se entrenó la misma red (sLSTM con CPC y ajuste fino) sobre los mismos ensayos y rondas LOSO, cambiando sólo la entrada (Tabla~\ref{tab:fuente} y Figura~\ref{fig:cm_fuente}).
 
 \begin{table}[H]
   \centering
@@ -271,7 +276,11 @@ Para decidir la fuente se entrenó la misma red (sLSTM con CPC y ajuste fino) so
   \label{fig:cm_fuente}
 \end{figure}
 
-El movimiento lleva prácticamente toda la información útil: distingue la altura de la carga (piso o mesa), que es justo lo que la sEMG no ve. \textbf{Desde este punto el proyecto trabajó sólo con MVNX}, lo que además simplifica la adquisición y elimina la sincronización entre equipos.
+El resultado muestra que el movimiento lleva prácticamente toda la información útil, porque distingue la altura de la carga (piso o mesa), que es justo lo que la sEMG no ve. Agregar la sEMG al movimiento, por su parte, no mejora el resultado, y trabajar sólo con movimiento simplifica además la adquisición y elimina la sincronización entre equipos.
+
+A continuación, para saber cuántas variables hacen falta, el conjunto de \textcite{bassani2025} (8 señales de movimiento y 2 de sEMG) sirvió como punto de comparación. Con esas 10 señales, la CPC-GRU obtuvo 0.880, igual que con las 30 variables de movimiento (0.878; $p = 0.57$, 7 de 12 sujetos a favor); es decir, un conjunto pequeño, dominado por el movimiento, conserva el desempeño. Por último, se buscó el mínimo de variables de movimiento que puede medirse con pocos sensores (Sección~\ref{sec:reduccion}), lo que llevó a las 10 variables EML, medibles con 11 sensores.
+
+Con la entrada así definida, la pregunta que guía el resto del artículo es si CPC alcanza el nivel supervisado del movimiento y del artículo de referencia, y en qué condiciones lo supera.
 
 \subsection{Modelos candidatos con movimiento (Avance 4)}
 Con las 30 variables se compararon familias distintas en las mismas ventanas y rondas (Tabla~\ref{tab:candidatos}). El Random Forest recibe 5 estadísticas por variable y ventana (media, desviación, mínimo, máximo y pendiente; 150 características), así que no ve el orden temporal dentro de la ventana. Las redes reciben la ventana completa.
@@ -298,12 +307,7 @@ Con las 30 variables se compararon familias distintas en las mismas ventanas y r
   \end{tabular}
 \end{table}
 
-Tres resultados orientaron las decisiones siguientes:
-\begin{itemize}
-  \item \textbf{La GRU con CPC fue la mejor red:} quedó a 0.016 del Random Forest, con la menor desviación entre personas y el mejor peor sujeto, y es la más rápida de preentrenar. Las diferencias entre GRU, sLSTM y mLSTM ($\le 0.016$) son menores que la variación entre sujetos, así que una celda xLSTM más expresiva no justificaba su costo, de dos a tres veces mayor.
-  \item \textbf{La representación aprendida sin etiquetas ya separa las actividades:} con la red CPC-GRU congelada y sólo una sonda lineal, el F1 fue de 0.820, contra 0.631 de la misma red sin preentrenar.
-  \item \textbf{Ajustar hiperparámetros no cambió el orden:} con configuraciones elegidas en los sujetos 11--12, el Random Forest pasó a 0.893 y la GRU a 0.879.
-\end{itemize}
+Estos resultados orientaron las decisiones siguientes. En primer lugar, \textbf{la GRU con CPC fue la mejor red}: quedó a 0.016 del Random Forest, con la menor desviación entre personas y el mejor peor sujeto, y además es la más rápida de preentrenar. Como las diferencias entre GRU, sLSTM y mLSTM ($\le 0.016$) son menores que la variación entre sujetos, una celda xLSTM más expresiva no justificaba su costo, de dos a tres veces mayor. En segundo lugar, \textbf{la representación aprendida sin etiquetas ya separa las actividades}: con la red CPC-GRU congelada y sólo una sonda lineal, el F1 fue de 0.820, frente a 0.631 de la misma red sin preentrenar. Finalmente, \textbf{ajustar hiperparámetros no cambió el orden}: con configuraciones elegidas en los sujetos 11--12, el Random Forest pasó a 0.893 y la GRU a 0.879.
 
 \subsection{Ensambles sobre CPC (Avance 5)}
 El Avance~5 combinó representaciones CPC con clasificadores lineales para que cualquier mejora se debiera a la representación. El \textbf{ensamble homogéneo de cinco CPC-GRU} que sólo difieren en la semilla obtuvo un F1 de $0.873 \pm 0.021$ (peor sujeto 0.827). Superó por 0.060 a la mejor sonda individual en los 12 sujetos, porque una sola sonda dependía mucho de la semilla del preentrenamiento. Los ensambles heterogéneos de GRU, LSTM y sLSTM (concatenación, votación suave, \emph{stacking} y \emph{blending}) y un CPC con las tres redes sobre un encoder compartido quedaron entre 0.813 y 0.846. El \emph{blending} ilustró el riesgo de ajustar con un solo sujeto: tuvo el mejor F1 en validación (0.880) y uno de los peores en prueba (0.813).
@@ -410,7 +414,7 @@ Los aciertos van de 79\,\% (\act{LT}) a 96\,\% (\act{W}). Los errores se concent
 
 Para un análisis ergonómico, el error más costoso sería confundir una actividad a nivel de piso con una a nivel de mesa, porque se subestimaría la flexión del tronco. Esa confusión es casi nula (\act{PF} $\leftrightarrow$ \act{LT} $\le 0.1$\,\%), y tampoco se confunde caminar con estar quieto (\act{W} $\to$ \act{N}: 0\,\%). Los errores son, sobre todo, \textbf{de frontera entre actividades consecutivas}: el modelo acierta qué ocurre, pero puede adelantar o retrasar el cambio una fracción de segundo. En una aplicación que acumula exposición a lo largo de una jornada, ese tipo de error afecta menos que una confusión entre niveles.
 
-\paragraph{¿Dónde está el techo?} Dos diagnósticos descartaron que el límite estuviera en la lectura de la representación. Una cabeza MLP con 15 veces más parámetros no mejoró (0.876, $p = 0.62$), y el F1 en entrenamiento también se quedó en $\approx 0.90$. Resumir toda la ventana con atención en lugar de usar $c_T$ empató (0.874, $p = 0.97$), y la atención aprendió a concentrar el 61\,\% de su peso en el último segundo. La causa probable está en los datos: el \textbf{89.6\,\% de las ventanas de 4~s cruza una transición} entre actividades, porque las acciones duran entre 1.6 y 4.4~s.
+Cabe preguntarse, entonces, si el límite de $\approx 0.88$ se debe al modelo o a los datos. Dos diagnósticos descartaron que estuviera en la lectura de la representación. Por un lado, una cabeza MLP con 15 veces más parámetros no mejoró (0.876, $p = 0.62$), y el F1 en entrenamiento también se quedó en $\approx 0.90$. Por otro, resumir toda la ventana con atención en lugar de usar $c_T$ empató (0.874, $p = 0.97$), y la atención aprendió a concentrar el 61\,\% de su peso en el último segundo. Por lo tanto, la causa probable está en los datos: el \textbf{89.6\,\% de las ventanas de 4~s cruza una transición} entre actividades, porque las acciones duran entre 1.6 y 4.4~s.
 
 \subsection{Validación en el escenario de pocas etiquetas}
 \label{sec:pocas}
@@ -451,17 +455,38 @@ El objetivo central del proyecto era medir si el preentrenamiento sin etiquetas 
 
 La Tabla~\ref{tab:pocas} y la Figura~\ref{fig:pocas} muestran el resultado principal del proyecto. \textbf{Con 10 ventanas etiquetadas por actividad o menos} (entre 7 y 70 ventanas en total, menos del 0.2\,\% de las etiquetas de entrenamiento), la CPC-GRU supera al Random Forest por 0.045 a 0.107 de F1, en 11 o 12 de los 12 sujetos. Para igualar lo que CPC logra con 5 y 10 ventanas por actividad, el Random Forest necesita unas 11 y 22: \textbf{alrededor de 2.2 veces más etiquetas}. Desde 25 ventanas por actividad la ventaja se reduce y deja de ser significativa, y con todas las etiquetas el orden se invierte.
 
-\paragraph{La ventaja se debe al preentrenamiento.} La misma red entrenada desde cero queda sobre la curva del Random Forest (0.615 contra 0.611 con 10 ventanas), y la CPC-GRU la supera de forma significativa hasta con 25 ventanas por actividad. Con un encoder aleatorio congelado, CPC gana por 0.07 a 0.16 desde 2 ventanas por actividad, en los 12 sujetos. La arquitectura sola no da ventaja; la da lo que CPC aprende sin etiquetas.
+Esta ventaja se debe al preentrenamiento. La misma red entrenada desde cero queda sobre la curva del Random Forest (0.615 contra 0.611 con 10 ventanas), mientras que la CPC-GRU la supera de forma significativa hasta con 25 ventanas por actividad. Del mismo modo, frente a un encoder aleatorio congelado, CPC gana por 0.07 a 0.16 desde 2 ventanas por actividad, en los 12 sujetos. Así, la arquitectura sola no da ventaja; la da lo que CPC aprende sin etiquetas.
 
-\paragraph{Basta congelar la red.} Congelar CPC y entrenar sólo una cabeza lineal, entrenar sólo el MLP de \textcite{haresamudram2021} o ajustar la red completa (LP-FT) difieren en $\le 0.016$ en todos los tamaños. Con 2 ventanas por actividad, la validación eligió cero épocas de ajuste fino en el 76\,\% de los casos.
+Además, para aprovecharla basta congelar la red. Congelar CPC y entrenar sólo una cabeza lineal, entrenar sólo el MLP de \textcite{haresamudram2021} o ajustar la red completa (LP-FT) difieren en $\le 0.016$ en todos los tamaños. De hecho, con 2 ventanas por actividad, la validación eligió cero épocas de ajuste fino en el 76\,\% de los casos.
 
-\paragraph{Dónde gana.} Con 10 ventanas por actividad, la ventaja se concentra en \act{K} ($+0.26$), \act{PT} ($+0.22$) y \act{LT} ($+0.13$), actividades que se distinguen por cómo evoluciona el movimiento más que por la postura promedio. En \act{W} y \act{LF} hay empate, y en \act{PF} gana el Random Forest ($-0.04$). La ventaja es consistente, pero no universal: en el sujeto~8 el Random Forest gana desde 5 ventanas por actividad.
+Por último, la ventaja no se reparte por igual entre las actividades. Con 10 ventanas por actividad, se concentra en \act{K} ($+0.26$), \act{PT} ($+0.22$) y \act{LT} ($+0.13$), actividades que se distinguen por cómo evoluciona el movimiento más que por la postura promedio. En \act{W} y \act{LF}, en cambio, hay empate, y en \act{PF} gana el Random Forest ($-0.04$). La ventaja es, por lo tanto, consistente pero no universal: en el sujeto~8 el Random Forest gana desde 5 ventanas por actividad.
 
-\subsection{Validaciones complementarias}
-\begin{itemize}
-  \item \textbf{Número de sujetos.} Con las 10 variables de \textcite{bassani2025} (8 de movimiento y 2 de sEMG), la CPC-GRU obtuvo 0.880, igual que con las 30 variables de movimiento ($p = 0.57$). Entrenarla con 4, 6, 8 y 10 personas dio 0.826, 0.852, 0.868 y 0.880: la curva todavía no se aplana, y más sujetos probablemente ayudarían.
-  \item \textbf{Comparación con el artículo de referencia.} \textcite{bassani2025} reportan un F1 de 95.7\,\% con una partición aleatoria 70--30 de las ventanas. Con nuestros datos, esa partición sólo sube el F1 en $\approx 0.03$ (CPC-GRU 0.900; Random Forest 0.919), aunque el 90.9\,\% de las ventanas de prueba tiene en entrenamiento una vecina que comparte el 87.5\,\% de sus instantes. Por esa fuga, la cifra comparable con nuestro LOSO es la de su sujeto nuevo (0.903), que está dentro del rango de nuestros sujetos.
-\end{itemize}
+\subsection{Comparación con el artículo de referencia}
+\label{sec:complementarias}
+Para compararse con \textcite{bassani2025} en condiciones cercanas a las suyas, se replicó su protocolo con sus 10 señales y la CPC-GRU a 12~Hz (notebook~12): cada uno de los 14 sujetos se evaluó entrenando con los otros 13 (Tabla~\ref{tab:bassani_resumen}). La CPC-GRU obtuvo $0.883 \pm 0.033$ de media y \textbf{0.910 en el sujeto~11}, frente a 0.903 de su BiLSTM. La diferencia es mucho menor que la variación entre personas (0.80--0.92) y proviene de una sola persona, por lo que indica un desempeño \textbf{al nivel del artículo}, no superior. Ni entrenar con más sujetos (la curva se aplana desde 10) ni usar su escala de 1~s a 240~Hz (0.874 en el mejor caso) mejoró el resultado. Su 95.7\,\% con partición aleatoria tampoco es comparable, porque evalúa a personas ya vistas: con esa partición, nuestros modelos también suben a 0.90--0.92. El Anexo~\ref{anx:bassani} detalla el protocolo, los resultados por actividad y los experimentos complementarios.
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Comparación con \textcite{bassani2025}. Las filas de este proyecto usan las 10 señales del artículo, salvo la partición aleatoria (10 variables EML). La media es el F1 macro promedio de los sujetos evaluados; la última columna, el F1 del sujeto~11. Fuente: notebooks~12 y~16, y Tabla~4 de \textcite{bassani2025}.}
+  \label{tab:bassani_resumen}
+  \begin{tabular}{l>{\raggedright\arraybackslash}p{5.6cm}cc}
+    \toprule
+    Modelo & Entrenamiento y evaluación & Media & Sujeto~11 \\
+    \midrule
+    \multicolumn{4}{l}{\emph{Con personas nuevas}} \\
+    BiLSTM \parencite{bassani2025} & 13 sujetos; prueba en el sujeto~11; 1~s a 240~Hz & --- & 0.903 \\
+    CPC-GRU & LOSO, 10 sujetos de entrenamiento (sujetos 1--12); 4~s a 12~Hz & $0.880 \pm 0.033$ & 0.908 \\
+    \textbf{CPC-GRU} & LOSO, 13 sujetos de entrenamiento (sujetos 1--14); 4~s a 12~Hz & $\mathbf{0.883} \pm 0.033$ & \textbf{0.910} \\
+    CPC-GRU & Igual, con 1~s a 240~Hz y horizonte CPC de 1~s & $0.874 \pm 0.026$ & 0.895 \\
+    CPC-GRU & Igual, con 1~s a 240~Hz y horizonte CPC de 0.5~s & $0.854 \pm 0.060$ & 0.888 \\
+    \midrule
+    \multicolumn{4}{l}{\emph{Con las mismas personas en entrenamiento y prueba (partición aleatoria 70--30)}} \\
+    BiLSTM \parencite{bassani2025} & Ventanas de 1~s a 240~Hz & 0.957 & --- \\
+    CPC-GRU / Random Forest & Ventanas de 4~s a 12~Hz & 0.900 / 0.919 & --- \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 % =====================================================================
 \section{Implementación y operación}
@@ -525,22 +550,22 @@ Los resultados sugieren un sistema como el de la Figura~\ref{fig:despliegue}:
 % =====================================================================
 
 \subsection{Hallazgos principales}
-\begin{enumerate}
-  \item \textbf{La fuente de información importa más que el modelo.} La sEMG de los brazos se queda en un F1 macro de 0.44--0.49 con cualquier modelo; el movimiento llega a $\approx 0.88$, y agregar la sEMG no mejora ($-0.006$, $p = 0.15$).
-  \item \textbf{Bastan 11 sensores.} Diez variables (flexión de codos, muñecas, caderas y rodillas, más la rapidez de las manos) conservan el desempeño de las 30, y pueden calcularse sólo con las orientaciones de 11 sensores sin pérdida para la CPC-GRU (0.870).
-  \item \textbf{Con todas las etiquetas, CPC queda cerca del modelo supervisado, pero no lo supera.} El modelo final obtiene $0.873 \pm 0.036$ contra $0.892$ del Random Forest con la misma entrada.
-  \item \textbf{Con pocas etiquetas, CPC es mejor.} Con 10 ventanas etiquetadas por actividad o menos, supera al Random Forest por hasta 0.107 de F1 en 11 o 12 de 12 sujetos. La ventaja se debe al preentrenamiento y equivale a necesitar alrededor de la mitad de las etiquetas.
-  \item \textbf{El techo está en los datos, no en el clasificador.} Ni una cabeza más grande ni resumir toda la ventana mejoran. Los errores restantes son de frontera entre actividades breves y consecutivas, y casi nunca confunden actividades de piso con actividades de mesa.
-\end{enumerate}
+La respuesta a la pregunta de investigación es afirmativa en sus dos partes. Con todas las etiquetas, un modelo preentrenado con CPC alcanza un desempeño comparable al de los modelos supervisados con personas nuevas, y cuando las etiquetas escasean los supera. Llegar a esa respuesta, sin embargo, exigió antes definir qué información conviene darle al modelo.
+
+El primer hallazgo es que \textbf{la fuente de información importa más que el modelo}. La sEMG de los brazos se queda en un F1 macro de 0.44--0.49 con cualquier modelo, mientras que el movimiento llega a $\approx 0.88$, y agregar la sEMG no lo mejora ($-0.006$, $p = 0.15$). A partir de ahí, la búsqueda del conjunto de variables mostró que \textbf{bastan 11 sensores}: diez variables (flexión de codos, muñecas, caderas y rodillas, más la rapidez de las manos) conservan el desempeño de las 30 y pueden calcularse sólo con las orientaciones de esos sensores, sin pérdida para la CPC-GRU (0.870).
+
+Con esa entrada, y con todas las etiquetas, \textbf{CPC queda cerca del modelo supervisado, pero no lo supera}: el modelo final obtiene $0.873 \pm 0.036$, frente a 0.892 del Random Forest con la misma entrada. En cambio, \textbf{alcanza el nivel del artículo de referencia}. Al replicar su protocolo, con 13 sujetos de entrenamiento y sus 10 señales, la CPC-GRU obtiene 0.910 en el sujeto~11, frente a 0.903 de su BiLSTM, y 0.883 de media en los 14 sujetos.
+
+La ventaja de CPC aparece donde el proyecto la buscaba: \textbf{con pocas etiquetas, CPC es mejor}. Con 10 ventanas etiquetadas por actividad o menos, supera al Random Forest por hasta 0.107 de F1, en 11 o 12 de los 12 sujetos. Los controles muestran que esa ventaja se debe al preentrenamiento, y equivale a necesitar alrededor de la mitad de las etiquetas.
+
+Finalmente, \textbf{el techo del desempeño está en los datos, no en el clasificador}. Ni una cabeza más grande ni resumir toda la ventana lo mejoran. Con las variables del artículo de referencia, tampoco lo mejoran más sujetos de entrenamiento ni su escala temporal de 240~Hz. Los errores restantes son de frontera entre actividades breves y consecutivas, y casi nunca confunden actividades de piso con actividades de mesa.
 
 \subsection{Limitaciones}
-\begin{itemize}
-  \item \textbf{Sin prueba final:} todos los resultados provienen de LOSO con los sujetos 1--12, y el subconjunto EML se eligió con esos mismos sujetos, por lo que su F1 es algo optimista. Además, un notebook exploratorio temprano llegó a mostrar resultados de los sujetos 13 y 14, así que su evaluación no será completamente ciega.
-  \item \textbf{Una sola semilla} en la mayoría de las comparaciones de redes. Diferencias de $\pm 0.01$ pueden ser ruido; la LSTM desde cero llegó a variar de 0.61 a 0.86 en un mismo sujeto según la semilla y la parada temprana.
-  \item \textbf{Población pequeña y homogénea:} 14 adultos jóvenes en laboratorio, con dos mujeres. La curva por número de sujetos todavía no se aplana.
-  \item \textbf{Escenario de pocas etiquetas idealizado:} ventanas balanceadas por actividad y tomadas de los 10 sujetos; un etiquetado real tendería a concentrarse en pocas personas. Además, el preentrenamiento llegó al tope de 20 épocas en 10 de 12 rondas.
-  \item \textbf{Sensores simulados a partir del MVNX:} las orientaciones ya pasaron por la fusión de Xsens, y la calibración se estimó ensayo por ensayo, lo que es más favorable que una calibración real por sesión.
-\end{itemize}
+Estos resultados deben leerse con varias limitaciones. La principal es que \textbf{el modelo final todavía no tiene prueba final}. Sus resultados provienen de LOSO con los sujetos 1--12, y el subconjunto EML se eligió con esos mismos sujetos, por lo que su F1 es algo optimista. Además, los sujetos 13 y 14 ya no permiten una evaluación completamente ciega: un notebook exploratorio temprano mostró sus resultados, y la réplica del protocolo del artículo (Sección~\ref{sec:complementarias}) los incluyó, aunque con otro conjunto de variables.
+
+Por otra parte, la mayoría de las comparaciones entre redes usan \textbf{una sola semilla}, de modo que diferencias de $\pm 0.01$ pueden ser ruido; la LSTM desde cero llegó a variar de 0.61 a 0.86 en un mismo sujeto según la semilla y la parada temprana. La \textbf{población es, además, pequeña y homogénea}: 14 adultos jóvenes en laboratorio, de los que sólo dos son mujeres. Aunque el desempeño ya no mejora con más sujetos del mismo protocolo, eso no garantiza que el modelo generalice a otras poblaciones o entornos de trabajo.
+
+También el \textbf{escenario de pocas etiquetas está idealizado}. Las ventanas etiquetadas están balanceadas por actividad y se toman de los 10 sujetos, mientras que un etiquetado real tendería a concentrarse en pocas personas; además, el preentrenamiento llegó al tope de 20 épocas en 10 de 12 rondas. Por último, \textbf{los 11 sensores se simularon a partir del MVNX}: sus orientaciones ya pasaron por la fusión de Xsens, y la calibración se estimó ensayo por ensayo, lo que es más favorable que una calibración real por sesión.
 
 \subsection{Trabajo futuro}
 \begin{itemize}
@@ -553,7 +578,7 @@ Los resultados sugieren un sistema como el de la Figura~\ref{fig:despliegue}:
 
 % --- Declaración de uso de IA ---
 \section*{Declaración de uso de inteligencia artificial}
-Se utilizó \textcite{anthropic2026claude} como apoyo para generar y optimizar el código de los notebooks (preparación de datos, protocolo LOSO, modelos CPC y análisis) y para redactar y editar este artículo a partir de los resultados del repositorio. El equipo definió los experimentos, verificó que las cifras coinciden con las de los notebooks y revisó las figuras y su interpretación. La responsabilidad final sobre el contenido entregado recae en los autores.
+Se utilizó \textcite{anthropic2026claude} como apoyo para generar y optimizar el código de los notebooks (preparación de datos, protocolo LOSO, modelos CPC y análisis) y como corrector de estilo de este artículo. El equipo definió los experimentos, verificó que las cifras coinciden con las de los notebooks y revisó las figuras y su interpretación. La responsabilidad final sobre el contenido entregado recae en los autores.
 
 % --- Referencias ---
 \printbibliography[title={Referencias}]
@@ -625,5 +650,55 @@ Se utilizó \textcite{anthropic2026claude} como apoyo para generar y optimizar e
     \bottomrule
   \end{tabular}
 \end{table}
+
+\section{Comparación detallada con el artículo de referencia}
+\label{anx:bassani}
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Protocolo de este proyecto frente al de \textcite{bassani2025}.}
+  \label{tab:protocolos}
+  \begin{tabular}{>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}p{5.4cm}>{\raggedright\arraybackslash}p{5.4cm}}
+    \toprule
+    & Este proyecto & \textcite{bassani2025} \\
+    \midrule
+    Evaluación con personas nuevas & LOSO: cada uno de los sujetos 1--12, uno a la vez & Un solo sujeto de prueba (el 11) \\
+    Sujetos de entrenamiento & 10 por ronda (más 1 de validación interna) & 13 \\
+    Resultado reportado & Media, desviación y peor de 12 sujetos & F1 del sujeto 11 \\
+    Entrada & Variables de movimiento (30 y luego 10), a 12~Hz & 8 señales de movimiento y 2 de sEMG, a 240~Hz \\
+    Ventanas & 4~s, una etiquetada cada 0.5~s & 1~s, sin traslape \\
+    Desbalance de clases & Pesos por clase en la pérdida & Submuestreo de \act{N} y copias con ruido de las clases pequeñas \\
+    Modelo & CPC sin etiquetas + ajuste supervisado & Supervisado (la mejor red, una BiLSTM) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Para comparar con \textcite{bassani2025} en condiciones cercanas a las suyas (Tabla~\ref{tab:protocolos}), se repitió la evaluación con su conjunto de 10 señales (8 de movimiento y 2 de sEMG) y con la CPC-GRU de la Sección~\ref{sec:cpc}, a 12~Hz y con ventanas de 4~s (notebook~12). En el LOSO de los sujetos 1--12, este modelo obtuvo $0.880 \pm 0.033$, el mismo nivel que con las 30 variables de movimiento (Sección~\ref{sec:fuente}).
+
+Como el artículo entrena con 13 sujetos y nuestro LOSO con 10, primero se midió cuánto pesa esa diferencia. Al entrenar con 4, 6, 8 y 10 personas, el F1 fue de 0.826, 0.852, 0.868 y 0.880, de modo que cada par de sujetos adicional aporta cada vez menos. Con 12 y 13 personas la curva ya se aplana (0.882 y 0.879; 13 frente a 10 sujetos: $-0.001$, $p = 0.85$). Por lo tanto, más personas del mismo protocolo ya no mejorarían este modelo, y los 3 sujetos de diferencia no explican por sí solos una brecha con el artículo.
+
+A continuación se replicó su protocolo: cada uno de los 14 sujetos se evaluó entrenando con los otros 13. La época del preentrenamiento, la regularización y las épocas del ajuste fino se eligieron primero con 12 sujetos y uno de validación interna; después, el modelo se reentrenó con los 13 con esos valores fijos. Con este protocolo, la CPC-GRU obtuvo $0.883 \pm 0.033$ de media en los 14 sujetos y \textbf{0.910 en el sujeto~11}, frente a 0.903 de la BiLSTM de \textcite{bassani2025} (Tabla~\ref{tab:sujeto11}). Por actividad, es mejor en \act{N}, \act{K}, \act{PT} y \act{PF}, y peor en \act{LF}, \act{LT} y \act{W}.
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{F1 por actividad en el sujeto~11, entrenando con los otros 13 sujetos. Ambos modelos usan las 10 señales del artículo; la CPC-GRU, a 12~Hz con ventanas de 4~s. Fuente: notebook~12 (sección~10) y Tabla~4 de \textcite{bassani2025}.}
+  \label{tab:sujeto11}
+  \setlength{\tabcolsep}{5pt}
+  \begin{tabular}{lcccccccc}
+    \toprule
+    & \act{N} & \act{LF} & \act{K} & \act{PT} & \act{LT} & \act{W} & \act{PF} & F1 macro \\
+    \midrule
+    CPC-GRU (este proyecto) & \textbf{0.960} & 0.864 & \textbf{0.951} & \textbf{0.868} & 0.905 & 0.904 & \textbf{0.916} & \textbf{0.910} \\
+    BiLSTM \parencite{bassani2025}          & 0.891 & \textbf{0.903} & 0.923 & 0.840 & \textbf{0.945} & \textbf{0.934} & 0.888 & 0.903 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Esta diferencia de $+0.007$ es, sin embargo, mucho menor que la variación entre personas (de 0.80 a 0.92 en los 14 sujetos), y proviene de una sola persona y una sola semilla. Por eso se interpreta como un desempeño \textbf{al nivel del artículo}, no superior. La media de los 14 sujetos, que el artículo no reporta, es la mejor estimación del desempeño con una persona nueva. Esta réplica incluye además a los sujetos 13 y 14, reservados hasta entonces, que obtuvieron 0.902 y 0.913: el modelo generaliza a ellos como al resto.
+
+Quedaba una diferencia de entrada: el artículo usa ventanas de 1~s a 240~Hz. Al repetir la evaluación con esa escala temporal, con un encoder que reduce la señal a 24~Hz, la CPC-GRU obtuvo 0.854 con un horizonte de predicción de 0.5~s y 0.874 con uno de 1~s. Ninguna de las dos versiones mejora la configuración de 12~Hz y 4~s; en el mejor caso, la diferencia es de $-0.009$ ($p = 0.15$). En el sujeto~11 quedaron en 0.888 y 0.895. La escala del proyecto, además de mucho más barata, conserva más contexto en cada ventana.
+
+Por último, \textcite{bassani2025} también reportan un F1 de 95.7\,\% con una partición aleatoria 70--30 de las ventanas. Con nuestros datos, esa partición sólo sube el F1 en $\approx 0.03$ (CPC-GRU 0.900; Random Forest 0.919), aunque el 90.9\,\% de las ventanas de prueba tiene en entrenamiento una vecina que comparte el 87.5\,\% de sus instantes. Esa partición mide qué tan bien se reconoce a personas ya vistas, no a una nueva; por eso la cifra comparable con nuestro LOSO es la del sujeto~11.
 
 \end{document}
