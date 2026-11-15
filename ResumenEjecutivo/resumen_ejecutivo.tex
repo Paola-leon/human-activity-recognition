@@ -60,7 +60,7 @@
 \thispagestyle{primera}
 
 % --- Título y datos ---
-\noindent{\LARGE\bfseries Reconocimiento automático de actividades de manejo manual de cargas con pocas etiquetas\par}
+\noindent{\Large\bfseries Aprendizaje autosupervisado de representaciones mediante Contrastive Predictive Coding para el reconocimiento de actividades humanas a partir de señales\par}
 \smallskip
 \noindent{\large\textcolor{black!60}{Resumen ejecutivo}\par}
 \medskip
@@ -72,67 +72,69 @@
 \textcolor{black!60}{Asesor:} Gerardo Jesús Camacho González \quad \textcolor{black!60}{Fecha:} noviembre de 2026}}%
 \endgroup\par\medskip
 
-% --- Problema y solución ---
-Levantar, sostener, transportar y colocar cargas a mano es una de las tareas industriales más asociadas con lesiones musculoesqueléticas. Para evaluar su riesgo, un área de ergonomía o de seguridad necesita saber \emph{qué} actividad realiza cada trabajador y \emph{cuándo}: no pesa lo mismo levantar una caja desde el piso que tomarla de una mesa. Hoy se obtiene marcando cada actividad a mano sobre video, un trabajo lento y costoso que limita la evaluación a muestras pequeñas de la jornada.
+% --- Problema y solución (contenido público) ---
+Los oficios que exigen levantar, sostener, transportar y colocar cargas a mano están entre los más asociados con lesiones musculoesqueléticas. Para identificar los movimientos que dañan al trabajador, primero hay que saber \emph{qué} actividad realiza y \emph{cuándo}: no exige lo mismo levantar una carga desde el piso que tomarla de una mesa. Hoy esa segmentación la hace a mano un anotador, y sus propios autores la describen como muy demandante en tiempo \parencite{bassani2025}. En la base de datos de este proyecto, 14 personas y unas 7~horas de actividad etiquetada suman más de 8\,300 segmentos marcados uno por uno \parencite{bassani2021dataset}. Cada persona, tarea o entorno nuevo repite ese costo.
 
-La solución propuesta es un sistema que \textbf{reconoce automáticamente siete actividades de manejo de cargas} a partir de \textbf{11 sensores de movimiento} colocados en el cuerpo, y entrega una línea de tiempo de actividades lista para el análisis ergonómico. Su diferencia frente a un modelo convencional es que aprende primero de horas de movimiento \emph{sin anotar}, con una técnica llamada codificación predictiva contrastiva (CPC) \parencite{vandenoord2018,haresamudram2021}, y después necesita muy pocos ejemplos etiquetados para adaptarse. Se validó con una base pública de 14 personas \parencite{bassani2021dataset}, siempre con personas que el modelo no había visto.
+Este proyecto de investigación evaluó si un modelo puede aprender primero del movimiento \emph{sin etiquetar} y necesitar después menos anotaciones. Para ello se usó la codificación predictiva contrastiva (CPC) \parencite{vandenoord2018,haresamudram2021}, una técnica de aprendizaje autosupervisado. El resultado es un modelo que \textbf{reconoce automáticamente siete actividades de manejo de cargas} a partir de \textbf{11 sensores de movimiento} y entrega una línea de tiempo de actividades. Es el primer paso para detectar movimientos lesivos en estos oficios. Todas las evaluaciones se hicieron con personas que el modelo no había visto.
 
 % --- Cifras de desempeño del modelo ---
 \medskip
 \noindent
 \begin{minipage}[t]{0.235\linewidth}\cifragris{0.87}{F1 con personas nuevas}{media de 12 personas}{}\end{minipage}\hfill
-\begin{minipage}[t]{0.235\linewidth}\cifragris{0.91 vs 0.90}{Frente al estado del arte}{misma persona de prueba}{}\end{minipage}\hfill
-\begin{minipage}[t]{0.235\linewidth}\cifraacento{2.2$\times$}{Menos etiquetas}{con pocas anotaciones}{}\end{minipage}\hfill
-\begin{minipage}[t]{0.235\linewidth}\cifragris{11 de 17}{Sensores necesarios}{sin perder desempeño}{}\end{minipage}
+\begin{minipage}[t]{0.235\linewidth}\cifragris{0.88 y 0.90}{Prueba final}{2 personas reservadas}{}\end{minipage}\hfill
+\begin{minipage}[t]{0.235\linewidth}\cifraacento{2.2$\times$}{Menos etiquetas}{con $\le 10$ ejemplos por actividad}{}\end{minipage}\hfill
+\begin{minipage}[t]{0.235\linewidth}\cifragris{11 de 17}{Sensores necesarios}{sin pérdida significativa}{}\end{minipage}
 \medskip
 
 % --- Desempeño ---
-Con todas las etiquetas disponibles, el sistema alcanza un F1 macro de 0.87 en personas nuevas (1.0 sería perfecto), al nivel de un modelo supervisado bien ajustado (0.89) y del estudio publicado por los creadores de la base de datos: al replicar sus condiciones, nuestro modelo obtiene 0.91 en su persona de prueba frente a 0.90 de su red supervisada \parencite{bassani2025}. Una prueba final con dos personas reservadas durante todo el desarrollo confirmó esa estimación (0.88 y 0.90). Su ventaja aparece donde más cuesta: \textbf{con 10 ejemplos etiquetados por actividad o menos, supera al modelo supervisado por hasta 0.11 de F1} en 11 o 12 de las 12 personas evaluadas, y para igualarlo el modelo supervisado necesita unas 2.2 veces más etiquetas. Además, casi nunca confunde una actividad a nivel de piso con una a nivel de mesa ($\le 0.1$\,\%), el error más costoso para un análisis ergonómico.
+Con todas las etiquetas, el modelo alcanza un F1 macro de 0.87 en personas nuevas (1.0 sería perfecto), cerca de un Random Forest supervisado (0.89). En una réplica del protocolo de los creadores de la base, queda al nivel de su red supervisada (0.91 frente a 0.90 en su persona de prueba) \parencite{bassani2025}. Dos personas reservadas durante todo el desarrollo lo confirmaron (0.88 y 0.90). La ventaja del enfoque aparece cuando las etiquetas escasean. \textbf{Con 10 ejemplos etiquetados por actividad o menos, supera al modelo supervisado por hasta 0.11 de F1} en 11 o 12 de las 12 personas evaluadas, y el modelo supervisado necesita unas 2.2 veces más etiquetas para igualarlo. Los errores se concentran en las fronteras con la postura neutral. La confusión entre piso y mesa es baja ($\le 3$\,\% de las ventanas), salvo en una de las dos personas reservadas: en ella, el 11\,\% de las ventanas de levantar del piso se confundieron con levantar de la mesa.
 
-% --- Beneficios cuantificables (mensuales) ---
-Para un área que hoy analiza 40 horas de grabación al mes, el escenario de referencia estima los siguientes beneficios mensuales:
+% --- Beneficios cuantificables (mensuales, contenido público) ---
+Para una campaña hipotética de 4 personas nuevas al mes, en la que el modelo segmenta y el anotador sólo revisa y corrige, se estiman estos beneficios mensuales:
 
 \medskip
 \noindent
-\begin{minipage}[t]{0.485\linewidth}\cifragris{$-$140\,h}{Ahorro de tiempo de análisis}{horas/mes ($-$87.5\,\%)}{}\end{minipage}\hfill
-\begin{minipage}[t]{0.485\linewidth}\cifragris{$-$\$35\,000}{Ahorro en costos operativos}{MXN/mes}{}\end{minipage}
+\begin{minipage}[t]{0.485\linewidth}\cifragris{$-$30\,h}{Ahorro de tiempo de anotación}{horas/mes ($-$75\,\%; de 40 a 10~h)}{}\end{minipage}\hfill
+\begin{minipage}[t]{0.485\linewidth}\cifragris{$-$\$5\,100}{Ahorro en costos operativos}{MXN/mes en horas de investigación}{}\end{minipage}
 
 \vspace{5pt}
 \noindent
-\begin{minipage}[t]{0.485\linewidth}\cifragris{+700\,\%}{Capacidad de procesamiento}{horas de grabación analizadas/mes, mismo personal}{}\end{minipage}\hfill
-\begin{minipage}[t]{0.485\linewidth}\cifragris{$-$55\,\%}{Esfuerzo de anotación}{por cada adaptación a un área nueva (medido)}{}\end{minipage}
+\begin{minipage}[t]{0.485\linewidth}\cifragris{+300\,\%}{Capacidad de procesamiento}{personas segmentadas/mes con las mismas horas (de 4 a 16)}{}\end{minipage}\hfill
+\begin{minipage}[t]{0.485\linewidth}\cifraacento{$-$55\,\%}{Etiquetas para adaptar el modelo}{por cada tarea o entorno nuevo (medido)}{}\end{minipage}
 
 \smallskip
-\noindent{\footnotesize\textcolor{black!60}{Cálculo y supuestos en el Anexo~A. Las cifras en pesos y horas son estimaciones que deben validarse con el sponsor; la reducción de anotación se midió en el proyecto.}}
+\noindent{\footnotesize\textcolor{black!60}{Cálculo y supuestos en el Anexo~A. El tiempo de anotación es una estimación del equipo; la reducción de etiquetas se midió en el proyecto.}}
 \medskip
 
-% --- Beneficios intangibles ---
-\noindent\textbf{Mejora en la toma de decisiones.} La exposición se mide en turnos completos, no en unos minutos de video, y permite priorizar puestos con datos.\par
+% --- Beneficios intangibles (contenido público) ---
+\noindent\textbf{Mejora en la toma de decisiones.} Indica cuántos sensores y cuántas etiquetas hacen falta antes de diseñar una nueva campaña de grabación.\par
 \smallskip
-\noindent\textbf{Mejora en la calidad.} Todas las grabaciones se segmentan con el mismo criterio, sin variabilidad entre analistas.\par
+\noindent\textbf{Innovación.} Aplica el aprendizaje autosupervisado al manejo manual de cargas y deja un modelo preentrenado reutilizable para otras tareas y oficios.\par
 \smallskip
-\noindent\textbf{Facilidad o simplificación del trabajo.} El analista pasa de marcar video cuadro por cuadro a auditar una muestra.\par
+\noindent\textbf{Mejora en la calidad.} Todas las grabaciones se segmentan con el mismo criterio, y el código y los resultados son reproducibles.\par
 \smallskip
-\noindent\textbf{Innovación o diferenciación competitiva.} Aprender sin etiquetas y con 11 sensores en lugar de 17 acerca la evaluación ergonómica continua a la planta.\par
+\noindent\textbf{Simplificación del trabajo.} Seis sensores menos por sesión, y un anotador que revisa en lugar de marcar cada segmento.\par
+\smallskip
+\noindent\textbf{Colaboración académica.} Fortalece el vínculo entre el Tecnológico de Monterrey y la Scuola Superiore Sant'Anna, con miras a una publicación conjunta.\par
 \medskip
 
 % --- Inversión y costos (TCO a 12 meses) ---
-El costo total de propiedad estimado para los primeros 12 meses es de \textbf{MXN 494\,000}: cinco meses para adaptar el modelo a sensores reales e implementar un piloto, y siete meses de operación (Anexo~B).
+El modelo y su validación ya se desarrollaron en este proyecto, sin costo para el sponsor. Sant'Anna ya cuenta con el traje inercial y el sensor de electromiografía. Entrenar el modelo toma unos 4 minutos en una computadora portátil (MacBook Air M4, 16~GB), y validarlo con 12 personas, menos de una hora; un servidor con GPU dedicada lo haría más rápido. El costo de propiedad estimado de una fase de validación de 12 meses es de \textbf{MXN 238\,000} y se concentra en horas de investigación (Anexo~B).
 
 \medskip
 \noindent
-\begin{minipage}[t]{0.235\linewidth}\cifragris{\$183\,k}{Desarrollo}{MXN}{}\end{minipage}\hfill
-\begin{minipage}[t]{0.235\linewidth}\cifragris{\$214\,k}{Implementación}{MXN}{}\end{minipage}\hfill
-\begin{minipage}[t]{0.235\linewidth}\cifragris{\$97\,k}{Operación (7 meses)}{MXN}{}\end{minipage}\hfill
-\begin{minipage}[t]{0.235\linewidth}\cifraacento{\$494\,k}{TCO 12 meses}{MXN}{}\end{minipage}
+\begin{minipage}[t]{0.235\linewidth}\cifragris{\$41\,k}{Desarrollo}{meses 1--3}{}\end{minipage}\hfill
+\begin{minipage}[t]{0.235\linewidth}\cifragris{\$93\,k}{Implementación}{meses 4--6}{}\end{minipage}\hfill
+\begin{minipage}[t]{0.235\linewidth}\cifragris{\$105\,k}{Operación}{meses 7--12}{}\end{minipage}\hfill
+\begin{minipage}[t]{0.235\linewidth}\cifraacento{\$238\,k}{TCO 12 meses}{MXN}{}\end{minipage}
 \medskip
 
-Con el volumen de referencia, el primer año recupera cerca de la mitad de la inversión (MXN 245\,000 en siete meses de operación) y el retorno completo llega hacia el segundo año; con más horas analizadas, el retorno se acorta. \textbf{Recomendamos aprobar un piloto de cinco meses (MXN 397\,000 de desarrollo e implementación) en un área con manejo de cargas}, y condicionar la operación a escala a tres criterios: un F1 de al menos 0.85 en la auditoría del piloto, una latencia compatible con el uso en tiempo real y la confirmación del ahorro de horas de análisis.
+\textbf{Recomendamos aprobar una fase de validación de seis meses (MXN 133\,500): adaptar el modelo al kit de 11 sensores y grabar a 12 personas nuevas.} Avanzar a la operación y a la publicación dependería de tres condiciones: un F1 de al menos 0.85 en esas personas, una revisión que tome como máximo el 25\,\% del tiempo de anotación manual y la confirmación, con los autores de la base, de su protocolo de evaluación.
 
 % --- Riesgos y mitigación ---
-Avanzar exige atender los riesgos que el propio proyecto identificó; la Tabla~\ref{tab:riesgos} resume los principales y cómo mitigarlos.
+La Tabla~\ref{tab:riesgos} resume los principales riesgos identificados y cómo mitigarlos.
 
-\begin{table}[H]
+\begin{table}[!tbp]
 \centering
 \footnotesize\setstretch{1}
 \caption{Principales riesgos y medidas de mitigación.}
@@ -141,22 +143,21 @@ Avanzar exige atender los riesgos que el propio proyecto identificó; la Tabla~\
 \toprule
 \textbf{Riesgo} & \textbf{Mitigación}\\
 \midrule
-Base de 14 adultos jóvenes en laboratorio: el desempeño puede bajar en otra población o entorno. & Readaptar el modelo con grabaciones sin anotar del área y auditar una muestra antes de escalar.\\[1pt]
-Los 11 sensores se simularon con un traje profesional; los comerciales tienen más ruido. & Probar el kit real en el piloto y medir cuánto ruido y desfase de calibración tolera el modelo.\\[1pt]
-La prueba final sólo incluyó a dos personas, y casi todas las comparaciones usan una sola semilla. & Auditar una muestra anotada en el piloto y repetir las comparaciones clave con varias semillas.\\[1pt]
-Colocar y levantar en la mesa tienen los errores más altos (F1 $\approx$ 0.82). & Usarlo para indicadores acumulados por turno, no para eventos aislados.\\[1pt]
-Rechazo del personal o uso indebido de los datos. & Consentimiento informado, datos anónimos y uso sólo para mejorar puestos, no para evaluar personas.\\
+14 adultos jóvenes en laboratorio: el desempeño puede bajar con trabajadores reales o en otro entorno. & Preentrenar con grabaciones sin etiquetar del nuevo entorno y auditar una muestra anotada antes de extender el uso.\\[1pt]
+Los 11 sensores se simularon con el traje completo; un kit reducido real puede tener más ruido. & Grabar la campaña piloto con el kit de 11 sensores y medir la pérdida de desempeño.\\[1pt]
+Evidencia limitada: dos personas en la prueba final, una sola semilla en casi todas las comparaciones y un muestreo de pocas etiquetas balanceado. & Repetir las comparaciones clave con varias semillas y con las personas de la nueva campaña.\\[1pt]
+La comparación con el estado del arte depende de detalles del protocolo (balanceo de clases y etiquetado de ventanas) aún por confirmar. & Consultar a los autores y reportarla como orientativa hasta confirmar su protocolo.\\[1pt]
+Reconocer la actividad no basta para identificar un movimiento lesivo, y los datos de los trabajadores son sensibles. & Combinar la segmentación con índices ergonómicos validados por especialistas, con consentimiento informado y datos anónimos.\\
 \bottomrule
 \end{tabular}
 \end{table}
 
 % --- Transferencia y continuidad ---
 \section*{Transferencia y continuidad}
-Se entregará al sponsor el repositorio del proyecto: código reproducible con su entorno, los modelos entrenados y los cuadernos de cada experimento con su diseño y resultados. Se incluyen el artículo técnico, una guía de instalación, el procedimiento para adaptar el sistema a un área nueva (grabar sin anotar y etiquetar de 10 a 50 ejemplos por actividad) y una propuesta de monitoreo que detecta descalibración y pérdida de desempeño sin etiquetas.
+Se entregará al sponsor el repositorio del proyecto: código reproducible con su entorno, modelos entrenados, cuadernos de cada experimento y el artículo técnico, que incluye una propuesta de despliegue y de monitoreo del desempeño sin etiquetas. También se documenta el procedimiento para adaptar el modelo a una tarea o un entorno nuevos: grabar sin etiquetar, preentrenar y etiquetar unos 10 ejemplos por actividad.
 
 \section*{Declaración de uso de inteligencia artificial}
-Se utilizó \textcite{anthropic2026claude} para redactar un borrador de este resumen a partir del artículo técnico del proyecto y para dar formato al documento. El equipo definió los supuestos de negocio, verificó las cifras y revisó la redacción final.
-La responsabilidad final sobre el contenido entregado recae en los autores.
+Se utilizó \textcite{anthropic2026claude} para redactar un borrador de este resumen a partir del artículo técnico y para dar formato al documento. El equipo definió los supuestos, verificó las cifras y revisó la redacción final. 
 
 % --- Referencias (biblatex + Biber, solo lo citado) ---
 \printbibliography[title={Referencias}]
@@ -164,20 +165,22 @@ La responsabilidad final sobre el contenido entregado recae en los autores.
 % --- Anexos ---
 \clearpage
 \section*{Anexo A. Cálculo de los beneficios cuantificables}
-Los beneficios se estiman para un escenario de referencia de un área que analiza manualmente grabaciones de manejo de cargas. Los supuestos S1--S4 son estimaciones del equipo que deben sustituirse por datos del sponsor; el indicador de anotación proviene de los experimentos del proyecto.
+Los beneficios se estiman para una campaña hipotética en la que Sant'Anna grabara a 4 personas nuevas al mes con el protocolo de la base de datos. Los datos D1--D2 se midieron en la base de datos \parencite{bassani2021dataset}. Los supuestos S1--S4 son estimaciones del equipo que deberían sustituirse por datos reales del laboratorio. La reducción de etiquetas se midió en el proyecto.
 
 \begin{table}[H]
 \centering
 \small
-\caption{Supuestos del escenario de referencia.}
-\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{9.4cm}r@{}}
+\caption{Datos medidos y supuestos de la campaña hipotética.}
+\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{10.4cm}r@{}}
 \toprule
-& Supuesto & Valor \\
+& Dato o supuesto & Valor \\
 \midrule
-S1 & Grabación de manejo de cargas analizada al mes (p.\,ej., 20 puestos $\times$ 2~h) & 40 h \\
-S2 & Tiempo de analista para segmentar manualmente 1~h de grabación & 4 h \\
-S3 & Tiempo de analista para auditar 1~h de grabación segmentada por el sistema & 0.5 h \\
-S4 & Costo por hora del analista, con prestaciones (MXN 40\,000/mes $\div$ 160~h) & MXN 250 \\
+D1 & Actividad etiquetada por persona (6.8~h en 14 personas y 517 ensayos) & 29 min \\
+D2 & Segmentos marcados a mano por persona (8\,337 en total; 2.9~s en promedio) & $\approx$ 600 \\
+S1 & Personas nuevas grabadas al mes & 4 \\
+S2 & Tiempo de anotador para marcar inicio, fin y actividad de un segmento (estimación) & 1 min \\
+S3 & Tiempo de revisión y corrección de la segmentación automática, como fracción del manual. Se apoya en el F1 de 0.88--0.90 con personas nuevas & 25\,\% \\
+S4 & Costo por hora de un investigador posdoctoral: apoyo de SECIHTI de MXN 27\,000/mes \parencite{secihti2025epm} $\div$ 160~h & MXN 168.75 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -186,49 +189,50 @@ S4 & Costo por hora del analista, con prestaciones (MXN 40\,000/mes $\div$ 160~h
 \centering
 \small
 \caption{Beneficios mensuales estimados.}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.6cm}>{\raggedright\arraybackslash}p{2.6cm}>{\raggedright\arraybackslash}p{8.4cm}@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.6cm}>{\raggedright\arraybackslash}p{2.7cm}>{\raggedright\arraybackslash}p{8.3cm}@{}}
 \toprule
 Indicador & Valor & Base de cálculo \\
 \midrule
-Ahorro de tiempo & 140 h/mes ($-$87.5\,\%) & S1 $\times$ (S2 $-$ S3) = 40 $\times$ (4 $-$ 0.5). Hoy: 160 h/mes; con el sistema: 20 h/mes de auditoría. \\
-Ahorro en costos operativos & MXN 35\,000/mes & 140 h/mes $\times$ S4. \\
-Capacidad de procesamiento & +700\,\% & Con las mismas 160 h/mes de analista se auditan 160 $\div$ 0.5 = 320 h de grabación, frente a 40 h hoy. \\
-Esfuerzo de anotación al adaptar a un área nueva & $-$55\,\% por adaptación & Medido: para igualar lo que el sistema logra con 5 y 10 ejemplos por actividad, el modelo supervisado necesita unas 11 y 22 (2.2 veces más); 1 $-$ 1/2.2 $\approx$ 55\,\%. \\
+Ahorro de tiempo & 30 h/mes ($-$75\,\%) & Manual: S1 $\times$ D2 $\times$ S2 = 4 $\times$ 600 $\times$ 1 min $=$ 40 h/mes. Con el modelo: 40 $\times$ S3 = 10 h/mes de revisión. \\
+Ahorro en costos operativos & MXN 5\,100/mes & 30 h/mes $\times$ S4 = MXN 5\,063. \\
+Capacidad de procesamiento & +300\,\% & Con las mismas 40 h/mes se revisan 40 $\div$ 2.5~h por persona = 16 personas, frente a 4 con anotación manual. \\
+Etiquetas para adaptar el modelo a una tarea o un entorno nuevos & $-$55\,\% por adaptación & Medido: para igualar lo que el modelo logra con 5 y 10 ejemplos por actividad, el Random Forest necesita unos 11 y 22 (2.2 veces más); 1 $-$ 1/2.2 $\approx$ 55\,\%. Sólo es válido con 10 ejemplos por actividad o menos; desde 25 la diferencia deja de ser significativa. \\
 \bottomrule
 \end{tabular}
 \end{table}
 
+\noindent La campaña no se plantea para subir el F1: entrenar con más de 10 personas ya no lo mejoró de forma apreciable. Su valor está en cubrir personas, tareas y entornos nuevos con menos horas de anotación.
+
 \clearpage
 \section*{Anexo B. Costo total de propiedad (12 meses)}
-Supuestos: ingeniero de aprendizaje automático con costo de MXN 60\,000/mes; sensores inerciales comerciales a USD 150 por unidad y un tipo de cambio de 18 MXN/USD; meses 1--3 de desarrollo, 4--5 de implementación y 6--12 de operación. Los precios son estimaciones de referencia que deben cotizarse.
+Supuestos: un investigador posdoctoral con el apoyo mensual de manutención de SECIHTI, MXN 27\,000 \parencite{secihti2025epm}, y un tipo de cambio de 18 MXN/USD. Los meses 1--3 son de desarrollo, los 4--6 de implementación y los 7--12 de operación. El traje inercial y el sensor de electromiografía ya existen, por lo que no tienen costo adicional. El desarrollo del modelo realizado en este proyecto no se cobra al sponsor. Los precios son estimaciones de referencia que deben cotizarse.
 
 \begin{table}[H]
 \centering
 \small
 \caption{Desglose del costo total de propiedad por servicio, en MXN.}
-\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{4.3cm}>{\raggedright\arraybackslash}p{5.6cm}r@{}}
+\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{5.3cm}r@{}}
 \toprule
 Fase & Servicio & Base de cálculo & MXN \\
 \midrule
-Desarrollo & Adaptación del modelo a sensores reales & 1 ingeniero $\times$ 3 meses & 180\,000 \\
- & Anotación inicial para la adaptación & 50 ejemplos por actividad; 10~h de analista & 2\,500 \\
+Desarrollo & Adaptación del modelo al kit de 11 sensores y a grabaciones nuevas & Posdoctorado al 50\,\% $\times$ 3 meses & 40\,500 \\
 \cmidrule{2-4}
- & \multicolumn{2}{l}{\emph{Subtotal desarrollo}} & 182\,500 \\
+ & \multicolumn{2}{l}{\emph{Subtotal desarrollo}} & 40\,500 \\
 \midrule
-Implementación & Sensores & 2 kits de 11 sensores $\times$ USD 150 $\times$ 18 & 59\,400 \\
- & Equipo de cómputo local & 1 computadora portátil o servidor de borde & 25\,000 \\
- & Piloto e integración & 1 ingeniero $\times$ 2 meses & 120\,000 \\
- & Capacitación del personal & Sesiones para analistas y supervisores & 10\,000 \\
+Implementación & Campaña piloto: grabación de 12 personas y revisión de su segmentación & Posdoctorado al 100\,\% $\times$ 3 meses & 81\,000 \\
+ & Compensación a participantes & 12 personas $\times$ MXN 1\,000 & 12\,000 \\
+ & Traje inercial y sensor de electromiografía & Equipo existente en Sant'Anna & 0 \\
 \cmidrule{2-4}
- & \multicolumn{2}{l}{\emph{Subtotal implementación}} & 214\,400 \\
+ & \multicolumn{2}{l}{\emph{Subtotal implementación}} & 93\,000 \\
 \midrule
-Operación & Mantenimiento y monitoreo & 20\,\% de un ingeniero $\times$ 7 meses & 84\,000 \\
- & Almacenamiento y respaldo & MXN 1\,000/mes $\times$ 7 meses & 7\,000 \\
- & Reposición de sensores & 10\,\% del costo de los kits & 6\,000 \\
+Operación & Reentrenamiento, monitoreo y análisis & Posdoctorado al 25\,\% $\times$ 6 meses & 40\,500 \\
+ & Servidor con GPU en la nube (opcional) & 20 h/mes $\times$ USD 1.5 $\times$ 18 $\times$ 6 meses & 3\,240 \\
+ & Almacenamiento y respaldo & MXN 500/mes $\times$ 6 meses & 3\,000 \\
+ & Publicación en acceso abierto & Cargo de publicación estimado de una revista indexada & 58\,000 \\
 \cmidrule{2-4}
- & \multicolumn{2}{l}{\emph{Subtotal operación}} & 97\,000 \\
+ & \multicolumn{2}{l}{\emph{Subtotal operación}} & 104\,740 \\
 \midrule
-\multicolumn{3}{l}{\textbf{Costo total de propiedad a 12 meses}} & \textbf{493\,900} \\
+\multicolumn{3}{l}{\textbf{Costo total de propiedad a 12 meses}} & \textbf{238\,240} \\
 \bottomrule
 \end{tabular}
 \end{table}
