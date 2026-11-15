@@ -70,3 +70,14 @@ Articulo/*.toc
 Articulo/*.lof
 Articulo/*.lot
 Articulo/articulo_vista_previa.pdf
+ResumenEjecutivo/*.aux
+ResumenEjecutivo/*.bbl
+ResumenEjecutivo/*.bcf
+ResumenEjecutivo/*.blg
+ResumenEjecutivo/*.fdb_latexmk
+ResumenEjecutivo/*.fls
+ResumenEjecutivo/*.log
+ResumenEjecutivo/*.out
+ResumenEjecutivo/*.run.xml
+ResumenEjecutivo/*.synctex.gz
+ResumenEjecutivo/*.toc

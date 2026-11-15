@@ -87,7 +87,7 @@ La solución propuesta es un sistema que \textbf{reconoce automáticamente siete
 \medskip
 
 % --- Desempeño ---
-Con todas las etiquetas disponibles, el sistema alcanza un F1 macro de 0.87 en personas nuevas (1.0 sería perfecto), al nivel de un modelo supervisado bien ajustado (0.89) y del estudio publicado por los creadores de la base de datos: al replicar sus condiciones, nuestro modelo obtiene 0.91 en su persona de prueba frente a 0.90 de su red supervisada \parencite{bassani2025}. Su ventaja aparece donde más cuesta: \textbf{con 10 ejemplos etiquetados por actividad o menos, supera al modelo supervisado por hasta 0.11 de F1} en 11 o 12 de las 12 personas evaluadas, y para igualarlo el modelo supervisado necesita unas 2.2 veces más etiquetas. Además, casi nunca confunde una actividad a nivel de piso con una a nivel de mesa ($\le 0.1$\,\%), el error más costoso para un análisis ergonómico.
+Con todas las etiquetas disponibles, el sistema alcanza un F1 macro de 0.87 en personas nuevas (1.0 sería perfecto), al nivel de un modelo supervisado bien ajustado (0.89) y del estudio publicado por los creadores de la base de datos: al replicar sus condiciones, nuestro modelo obtiene 0.91 en su persona de prueba frente a 0.90 de su red supervisada \parencite{bassani2025}. Una prueba final con dos personas reservadas durante todo el desarrollo confirmó esa estimación (0.88 y 0.90). Su ventaja aparece donde más cuesta: \textbf{con 10 ejemplos etiquetados por actividad o menos, supera al modelo supervisado por hasta 0.11 de F1} en 11 o 12 de las 12 personas evaluadas, y para igualarlo el modelo supervisado necesita unas 2.2 veces más etiquetas. Además, casi nunca confunde una actividad a nivel de piso con una a nivel de mesa ($\le 0.1$\,\%), el error más costoso para un análisis ergonómico.
 
 % --- Beneficios cuantificables (mensuales) ---
 Para un área que hoy analiza 40 horas de grabación al mes, el escenario de referencia estima los siguientes beneficios mensuales:
@@ -143,7 +143,7 @@ Avanzar exige atender los riesgos que el propio proyecto identificó; la Tabla~\
 \midrule
 Base de 14 adultos jóvenes en laboratorio: el desempeño puede bajar en otra población o entorno. & Readaptar el modelo con grabaciones sin anotar del área y auditar una muestra antes de escalar.\\[1pt]
 Los 11 sensores se simularon con un traje profesional; los comerciales tienen más ruido. & Probar el kit real en el piloto y medir cuánto ruido y desfase de calibración tolera el modelo.\\[1pt]
-Validación final pendiente y, en su mayoría, con una sola semilla. & Completar la prueba con las dos personas reservadas y repetir con varias semillas.\\[1pt]
+La prueba final sólo incluyó a dos personas, y casi todas las comparaciones usan una sola semilla. & Auditar una muestra anotada en el piloto y repetir las comparaciones clave con varias semillas.\\[1pt]
 Colocar y levantar en la mesa tienen los errores más altos (F1 $\approx$ 0.82). & Usarlo para indicadores acumulados por turno, no para eventos aislados.\\[1pt]
 Rechazo del personal o uso indebido de los datos. & Consentimiento informado, datos anónimos y uso sólo para mejorar puestos, no para evaluar personas.\\
 \bottomrule
