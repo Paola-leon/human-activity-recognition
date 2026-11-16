@@ -87,7 +87,7 @@ Este proyecto de investigación evaluó si un modelo puede aprender primero del 
 \medskip
 
 % --- Desempeño ---
-Con todas las etiquetas, el modelo alcanza un F1 macro de 0.87 en personas nuevas (1.0 sería perfecto), cerca de un Random Forest supervisado (0.89). En una réplica del protocolo de los creadores de la base, queda al nivel de su red supervisada (0.91 frente a 0.90 en su persona de prueba) \parencite{bassani2025}. Dos personas reservadas durante todo el desarrollo lo confirmaron (0.88 y 0.90). La ventaja del enfoque aparece cuando las etiquetas escasean. \textbf{Con 10 ejemplos etiquetados por actividad o menos, supera al modelo supervisado por hasta 0.11 de F1} en 11 o 12 de las 12 personas evaluadas, y el modelo supervisado necesita unas 2.2 veces más etiquetas para igualarlo. Los errores se concentran en las fronteras con la postura neutral. La confusión entre piso y mesa es baja ($\le 3$\,\% de las ventanas), salvo en una de las dos personas reservadas: en ella, el 11\,\% de las ventanas de levantar del piso se confundieron con levantar de la mesa.
+Con todas las etiquetas, el modelo alcanza un F1 macro de 0.87 en personas nuevas (1.0 sería perfecto), cerca de un Random Forest supervisado (0.89). En una réplica del protocolo de los creadores de la base, queda al nivel de su red supervisada (0.91 frente a 0.90 en su persona de prueba) \parencite{bassani2025}. Dos personas reservadas durante todo el desarrollo lo confirmaron (0.88 y 0.90). La ventaja del enfoque aparece cuando las etiquetas escasean. \textbf{Con 10 ejemplos etiquetados por actividad o menos, supera al modelo supervisado por hasta 0.11 de F1} en 11 o 12 de las 12 personas evaluadas, y el modelo supervisado necesita unas 2.2 veces más etiquetas para igualarlo. Los errores se concentran en las fronteras con la postura neutral. La confusión entre piso y mesa es baja ($\le 4$\,\% de las ventanas en las 12 personas) y se concentra en levantar del piso frente a levantar de la mesa; en una de las dos personas reservadas llegó al 11\,\%.
 
 % --- Beneficios cuantificables (mensuales, contenido público) ---
 Para una campaña hipotética de 4 personas nuevas al mes, en la que el modelo segmenta y el anotador sólo revisa y corrige, se estiman estos beneficios mensuales:
@@ -119,7 +119,7 @@ Para una campaña hipotética de 4 personas nuevas al mes, en la que el modelo s
 \medskip
 
 % --- Inversión y costos (TCO a 12 meses) ---
-El modelo y su validación ya se desarrollaron en este proyecto, sin costo para el sponsor. Sant'Anna ya cuenta con el traje inercial y el sensor de electromiografía. Entrenar el modelo toma unos 4 minutos en una computadora portátil (MacBook Air M4, 16~GB), y validarlo con 12 personas, menos de una hora; un servidor con GPU dedicada lo haría más rápido. El costo de propiedad estimado de una fase de validación de 12 meses es de \textbf{MXN 238\,000} y se concentra en horas de investigación (Anexo~B).
+El modelo y su validación ya se desarrollaron en este proyecto, sin costo para el sponsor. Sant'Anna ya cuenta con el traje inercial y el sensor de electromiografía. Entrenar el modelo toma entre 4 y 7 minutos en una computadora portátil (MacBook Air M4, 16~GB), y validarlo con 12 personas, menos de una hora; un servidor con GPU dedicada lo haría más rápido. El costo de propiedad estimado de una fase de validación de 12 meses es de \textbf{MXN 238\,000} y se concentra en horas de investigación (Anexo~B).
 
 \medskip
 \noindent
@@ -175,7 +175,7 @@ Los beneficios se estiman para una campaña hipotética en la que Sant'Anna grab
 \toprule
 & Dato o supuesto & Valor \\
 \midrule
-D1 & Actividad etiquetada por persona (6.8~h en 14 personas y 517 ensayos) & 29 min \\
+D1 & Actividad etiquetada por persona (6.8~h en 14 personas; 517 ensayos, todos los archivos de etiquetas del dataset) & 29 min \\
 D2 & Segmentos marcados a mano por persona (8\,337 en total; 2.9~s en promedio) & $\approx$ 600 \\
 S1 & Personas nuevas grabadas al mes & 4 \\
 S2 & Tiempo de anotador para marcar inicio, fin y actividad de un segmento (estimación) & 1 min \\
