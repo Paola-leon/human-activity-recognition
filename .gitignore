@@ -81,3 +81,9 @@ ResumenEjecutivo/*.out
 ResumenEjecutivo/*.run.xml
 ResumenEjecutivo/*.synctex.gz
 ResumenEjecutivo/*.toc
+Poster/*.aux
+Poster/*.fdb_latexmk
+Poster/*.fls
+Poster/*.log
+Poster/*.out
+Poster/*.synctex.gz

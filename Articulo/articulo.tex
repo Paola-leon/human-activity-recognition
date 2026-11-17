@@ -108,7 +108,7 @@ Este proyecto no resuelve un problema de negocio definido por un cliente: es un 
 \end{enumerate}
 
 \subsection{Evolución del enfoque}
-El conjunto de datos reúne dos fuentes de información complementarias: la \emph{captura de movimiento} de cuerpo completo (MVNX), que describe la postura y el desplazamiento del cuerpo, y la \emph{electromiografía de superficie} (sEMG) de los brazos, que mide la activación muscular. El proyecto partió de la sEMG, con CPC y redes recurrentes xLSTM \parencite{beck2024} como propuesta inicial (Avance~0).
+El conjunto de datos reúne dos fuentes de información complementarias: la \emph{captura de movimiento} de cuerpo completo (MVNX), que describe la postura y el desplazamiento del cuerpo, y la \emph{electromiografía de superficie} (sEMG) de los brazos, que mide la activación muscular. El proyecto partió de la sEMG, con CPC y redes recurrentes xLSTM \parencite{beck2024} como propuesta inicial.
 
 A lo largo del proyecto se exploraron distintos modelos, siempre desde la perspectiva de CPC, con distintas combinaciones de variables. Así se pudo determinar cuáles describen mejor la actividad. Cada fuente aporta información distinta:
 \begin{itemize}
@@ -153,7 +153,7 @@ Las etiquetas distinguen las siete actividades de la Tabla~\ref{tab:clases}. Alr
   \end{tabular}
 \end{table}
 
-\subsection{Exploración y preparación de la sEMG (Avances 1 y 2)}
+\subsection{Exploración y preparación de la sEMG}
 La exploración no encontró valores nulos, huecos ni canales constantes, pero sí tres ensayos del sujeto~7 con canales dañados, dos archivos con etiquetas inconsistentes y un ensayo faltante del sujeto~12. Como la frecuencia de muestreo varía entre archivos, los registros no pueden combinarse por número de muestras. La preparación fue:
 
 \begin{enumerate}
@@ -163,7 +163,7 @@ La exploración no encontró valores nulos, huecos ni canales constantes, pero s
   \item recortar por cuantiles, aplicar \texttt{log1p} y escalar con \texttt{RobustScaler}, ajustado sólo con los sujetos de entrenamiento.
 \end{enumerate}
 
-Para los modelos clásicos, el Avance~2 construyó un catálogo de \textbf{202 características por ventana} (nivel, dinámica, dispersión, espectro y coactivación de los canales). La exploración confirmó que la sEMG separa claramente el reposo de la actividad y que crece con la carga (unas 3 veces de 2 a 12~kg), pero también que las actividades de esfuerzo se superponen.
+Para los modelos clásicos se construyó un catálogo de \textbf{202 características por ventana} (nivel, dinámica, dispersión, espectro y coactivación de los canales). La exploración confirmó que la sEMG separa claramente el reposo de la actividad y que crece con la carga (unas 3 veces de 2 a 12~kg), pero también que las actividades de esfuerzo se superponen.
 
 \subsection{Captura de movimiento: sincronización y variables}
 Los relojes de la sEMG y del MVNX difieren en cerca de una hora. Se alinearon por los eventos de las etiquetas, con un residuo típico de 0.5~ms. Donde ambas fuentes tienen etiqueta, coinciden en el 100\,\% de los instantes. Tras excluir los ensayos con saltos de tiempo y recuperar tres ensayos del sujeto~7 que sólo se habían descartado por la sEMG, quedaron \textbf{508 ensayos de 14 sujetos} (337\,784 instantes, 7.8~h).
@@ -235,7 +235,7 @@ Antes de evaluar CPC se fijó qué logra un modelo supervisado con cada fuente d
 \begin{table}[H]
   \centering
   \small
-  \caption{Baselines supervisados por fuente de información. Las cifras de este proyecto se obtuvieron con LOSO sobre los sujetos 1--12; las del artículo de referencia, con su protocolo. Fuente: Avances~3 y~4, notebooks~07 y~10.}
+  \caption{Baselines supervisados por fuente de información. Las cifras de este proyecto se obtuvieron con LOSO sobre los sujetos 1--12; las del artículo de referencia, con su protocolo.}
   \label{tab:baseline}
   \begin{tabular}{p{9.0cm}c>{\raggedright\arraybackslash}p{3.4cm}}
     \toprule
@@ -257,7 +257,7 @@ Los baselines indican que el movimiento contiene mucha más información que la 
 \begin{table}[H]
   \centering
   \small
-  \caption{Misma red, distinta entrada (LOSO, 12 sujetos). Fuente: notebooks~07--09.}
+  \caption{Misma red, distinta entrada (LOSO, 12 sujetos).}
   \label{tab:fuente}
   \begin{tabular}{lcl}
     \toprule
@@ -276,13 +276,13 @@ A continuación, para saber cuántas variables hacen falta, el conjunto de \text
 
 Con la entrada así definida, la pregunta que guía el resto del artículo es si CPC alcanza el nivel supervisado del movimiento y del artículo de referencia, y en qué condiciones lo supera.
 
-\subsection{Modelos candidatos con movimiento (Avance 4)}
+\subsection{Modelos candidatos con movimiento}
 Con las 30 variables se compararon familias distintas en las mismas ventanas y rondas (Tabla~\ref{tab:candidatos}). El Random Forest recibe 5 estadísticas por variable y ventana (media, desviación, mínimo, máximo y pendiente; 150 características), así que no ve el orden temporal dentro de la ventana. Las redes reciben la ventana completa.
 
 \begin{table}[H]
   \centering
   \small
-  \caption{Modelos candidatos con 30 variables de movimiento (LOSO, 12 sujetos, una semilla). El tiempo de las redes con CPC incluye el preentrenamiento. Fuente: Avance~4 y notebook~10.}
+  \caption{Modelos candidatos con 30 variables de movimiento (LOSO, 12 sujetos, una semilla). El tiempo de las redes con CPC incluye el preentrenamiento. \emph{Desde cero}: misma arquitectura, inicializada al azar y entrenada sólo con etiquetas, sin preentrenamiento CPC.}
   \label{tab:candidatos}
   \begin{tabular}{lccc}
     \toprule
@@ -303,8 +303,9 @@ Con las 30 variables se compararon familias distintas en las mismas ventanas y r
 
 Estos resultados orientaron las decisiones siguientes. En primer lugar, \textbf{la GRU con CPC fue la mejor red}: quedó a 0.016 del Random Forest, con la menor desviación entre personas y el mejor peor sujeto, y además es la más rápida de preentrenar. Como las diferencias entre GRU, sLSTM y mLSTM ($\le 0.016$) son menores que la variación entre sujetos, una celda xLSTM más expresiva no justificaba su costo, de dos a tres veces mayor. En segundo lugar, \textbf{la representación aprendida sin etiquetas ya separa las actividades}: con la red CPC-GRU congelada y sólo una sonda lineal, el F1 fue de 0.820, frente a 0.631 de la misma red sin preentrenar. Finalmente, \textbf{ajustar hiperparámetros no cambió el orden}: con configuraciones elegidas en los sujetos 11--12, el Random Forest pasó a 0.893 y la GRU a 0.879.
 
-\subsection{Ensambles sobre CPC (Avance 5)}
-El Avance~5 combinó representaciones CPC con clasificadores lineales para que cualquier mejora se debiera a la representación. El \textbf{ensamble homogéneo de cinco CPC-GRU} que sólo difieren en la semilla obtuvo un F1 de $0.873 \pm 0.021$ (peor sujeto 0.827). Superó por 0.060 a la mejor sonda individual en los 12 sujetos, porque una sola sonda dependía mucho de la semilla del preentrenamiento. Los ensambles heterogéneos de GRU, LSTM y sLSTM (concatenación, votación suave, \emph{stacking} y \emph{blending}) y un CPC con las tres redes sobre un encoder compartido quedaron entre 0.813 y 0.846. El \emph{blending} ilustró el riesgo de ajustar con un solo sujeto: tuvo el mejor F1 en validación (0.880) y uno de los peores en prueba (0.813).
+\subsection{Ensambles sobre CPC}
+\label{sec:ensambles}
+Para intentar superar ese nivel se combinaron representaciones CPC con clasificadores lineales, de modo que cualquier mejora se debiera a la representación. El \textbf{ensamble homogéneo de cinco CPC-GRU} que sólo difieren en la semilla obtuvo un F1 de $0.873 \pm 0.021$ (peor sujeto 0.827). Superó por 0.060 a la mejor sonda individual en los 12 sujetos, porque una sola sonda dependía mucho de la semilla del preentrenamiento. Los ensambles heterogéneos de GRU, LSTM y sLSTM (concatenación, votación suave, \emph{stacking} y \emph{blending}) y un CPC con las tres redes sobre un encoder compartido quedaron entre 0.813 y 0.846. El \emph{blending} ilustró el riesgo de ajustar con un solo sujeto: tuvo el mejor F1 en validación (0.880) y uno de los peores en prueba (0.813).
 
 \subsection{Reducción de variables y sensores}
 \label{sec:reduccion}
@@ -313,7 +314,7 @@ Un traje de 17 sensores es poco práctico en una planta. Para encontrar el míni
 \begin{table}[H]
   \centering
   \small
-  \caption{Ruta de reducción de variables (LOSO, 12 sujetos). Los valores de $p$ comparan la CPC-GRU con su versión de 30 variables. Fuente: notebooks~11 y~12.}
+  \caption{Ruta de reducción de variables (LOSO, 12 sujetos). Los valores de $p$ comparan la CPC-GRU con su versión de 30 variables.}
   \label{tab:reduccion}
   \begin{tabular}{lccccc}
     \toprule
@@ -337,14 +338,14 @@ El subconjunto \textbf{EML} (flexión de codos, muñecas, caderas y rodillas de 
 
 \subsection{Modelo final}
 \label{sec:final}
-Se eligió como modelo final la \textbf{CPC-GRU con las 10 variables EML}, con la configuración de la Sección~\ref{sec:cpc}: encoder causal, GRU de 2 capas (256), cabeza lineal sobre $c_T$ y LP-FT (725\,415 parámetros). Los criterios fueron, en orden: (1) F1 macro en personas nuevas; (2) estabilidad entre personas; (3) desempeño con pocas etiquetas, porque anotar es una de las partes más costosas de llevar el sistema a una planta; y (4) costo y viabilidad en tiempo real (modelo causal, pocos sensores). El ensamble de semillas del Avance~5 alcanza el mismo F1 con 30 variables y 17 sensores, pero cuesta cinco preentrenamientos; el modelo final logra ese desempeño con un solo preentrenamiento y 6 sensores menos.
+Se eligió como modelo final la \textbf{CPC-GRU con las 10 variables EML}, con la configuración de la Sección~\ref{sec:cpc}: encoder causal, GRU de 2 capas (256), cabeza lineal sobre $c_T$ y LP-FT (725\,415 parámetros). Los criterios fueron, en orden: (1) F1 macro en personas nuevas; (2) estabilidad entre personas; (3) desempeño con pocas etiquetas, porque anotar es una de las partes más costosas de llevar el sistema a una planta; y (4) costo y viabilidad en tiempo real (modelo causal, pocos sensores). El ensamble de semillas (Sección~\ref{sec:ensambles}) alcanza el mismo F1 con 30 variables y 17 sensores, pero cuesta cinco preentrenamientos; el modelo final logra ese desempeño con un solo preentrenamiento y 6 sensores menos.
 
 % =====================================================================
 \section{Resultados y validación}
 % =====================================================================
 
 \subsection{Desempeño con todas las etiquetas frente a las referencias}
-El Avance~3 fijó los umbrales con los que se juzga un modelo, siempre medidos con el mismo protocolo: un \emph{piso} (el azar, 0.143), un \emph{mínimo aceptable} (el mejor baseline) y la \emph{referencia supervisada} con la misma entrada. La Tabla~\ref{tab:final} ubica el modelo final frente a ellos.
+Desde el inicio del proyecto se fijaron los umbrales con los que se juzga un modelo, siempre medidos con el mismo protocolo: un \emph{piso} (el azar, 0.143), un \emph{mínimo aceptable} (el mejor baseline) y la \emph{referencia supervisada} con la misma entrada. La Tabla~\ref{tab:final} ubica el modelo final frente a ellos.
 
 \begin{table}[H]
   \centering
@@ -412,7 +413,7 @@ Cabe preguntarse, entonces, si el límite de $\approx 0.88$ se debe al modelo o 
 
 \subsection{Validación en el escenario de pocas etiquetas}
 \label{sec:pocas}
-El objetivo central del proyecto era medir si el preentrenamiento sin etiquetas compensa tener pocas anotaciones. El experimento (notebook~17) usó el mismo LOSO con un diseño fijado antes de ver los resultados:
+El objetivo central del proyecto era medir si el preentrenamiento sin etiquetas compensa tener pocas anotaciones. El experimento usó el mismo LOSO con un diseño fijado antes de ver los resultados:
 
 \begin{itemize}
   \item CPC se preentrena en cada ronda sólo con las ventanas sin etiqueta de los 10 sujetos de entrenamiento, y su parada temprana usa la pérdida InfoNCE, no etiquetas.
@@ -425,7 +426,7 @@ El objetivo central del proyecto era medir si el preentrenamiento sin etiquetas 
 \begin{table}[H]
   \centering
   \small
-  \caption{F1 macro (media de 12 sujetos y 10 repeticiones) según el número de ventanas etiquetadas por actividad, con las 10 variables EML. Fuente: notebook~17; la columna ``todas'' proviene del notebook~11.}
+  \caption{F1 macro (media de 12 sujetos y 10 repeticiones) según el número de ventanas etiquetadas por actividad, con las 10 variables EML. La columna ``todas'' corresponde al LOSO con todas las etiquetas (Tabla~\ref{tab:final}).}
   \label{tab:pocas}
   \setlength{\tabcolsep}{4.5pt}
   \begin{tabular}{lcccccccc}
@@ -457,12 +458,12 @@ Por último, la ventaja no se reparte por igual entre las actividades. Con 10 ve
 
 \subsection{Prueba final con los sujetos reservados}
 \label{sec:prueba_final}
-Al cerrar el desarrollo, el modelo final se evaluó una sola vez en los sujetos 13 y 14 (notebook~18). Se entrenó con la misma estructura de cada ronda LOSO, ahora con los sujetos 1--11 para entrenar y el 12 como validación interna, y con tres semillas. El Random Forest se entrenó con los mismos sujetos. Ninguna decisión de esta etapa usó los sujetos de prueba.
+Al cerrar el desarrollo, el modelo final se evaluó una sola vez en los sujetos 13 y 14. Se entrenó con la misma estructura de cada ronda LOSO, ahora con los sujetos 1--11 para entrenar y el 12 como validación interna, y con tres semillas. El Random Forest se entrenó con los mismos sujetos. Ninguna decisión de esta etapa usó los sujetos de prueba.
 
 \begin{table}[H]
   \centering
   \small
-  \caption{Prueba final: F1 macro en los sujetos reservados (media de 3 semillas; entre paréntesis, el ensamble de las 3). El percentil ubica cada resultado entre los 12 sujetos del LOSO. Fuente: notebook~18.}
+  \caption{Prueba final: F1 macro en los sujetos reservados (media de 3 semillas; entre paréntesis, el ensamble de las 3). El percentil ubica cada resultado entre los 12 sujetos del LOSO.}
   \label{tab:prueba_final}
   \begin{tabular}{lccc}
     \toprule
@@ -480,7 +481,7 @@ Los dos resultados caen dentro del rango que estimó el LOSO, y ninguno por deba
 
 \subsection{Comparación con el artículo de referencia}
 \label{sec:complementarias}
-Para compararse con \textcite{bassani2025} en condiciones cercanas a las suyas, se replicó su protocolo con sus 10 señales (notebook~12): cada uno de los 14 sujetos se evaluó entrenando con los otros 13. La CPC-GRU obtuvo $0.883 \pm 0.033$ de media y \textbf{0.910 en el sujeto~11}, el único que reporta el artículo, frente a 0.903 de su BiLSTM. Como la diferencia es mucho menor que la variación entre personas (0.80--0.92) y proviene de una sola persona, indica un desempeño \textbf{al nivel del artículo}, no superior. Ni entrenar con más sujetos (la curva se aplana desde 10) ni usar su escala de 1~s a 240~Hz mejoró el resultado. Su 95.7\,\% con partición aleatoria 70--30 tampoco es comparable, porque evalúa a personas ya vistas: con esa partición, nuestros modelos también suben a 0.90--0.92. El Anexo~\ref{anx:bassani} detalla el protocolo, los resultados por actividad y los experimentos complementarios (Tabla~\ref{tab:bassani_resumen}).
+Para compararse con \textcite{bassani2025} en condiciones cercanas a las suyas, se replicó su protocolo con sus 10 señales: cada uno de los 14 sujetos se evaluó entrenando con los otros 13. La CPC-GRU obtuvo $0.883 \pm 0.033$ de media y \textbf{0.910 en el sujeto~11}, el único que reporta el artículo, frente a 0.903 de su BiLSTM. Como la diferencia es mucho menor que la variación entre personas (0.80--0.92) y proviene de una sola persona, indica un desempeño \textbf{al nivel del artículo}, no superior. Ni entrenar con más sujetos (la curva se aplana desde 10) ni usar su escala de 1~s a 240~Hz mejoró el resultado. Su 95.7\,\% con partición aleatoria 70--30 tampoco es comparable, porque evalúa a personas ya vistas: con esa partición, nuestros modelos también suben a 0.90--0.92. El Anexo~\ref{anx:bassani} detalla el protocolo, los resultados por actividad y los experimentos complementarios (Tabla~\ref{tab:bassani_resumen}).
 
 
 % =====================================================================
@@ -550,7 +551,7 @@ La ventaja de CPC aparece donde el proyecto la buscaba: \textbf{con pocas etique
 Finalmente, \textbf{el techo del desempeño está en los datos, no en el clasificador}. Ni una cabeza más grande ni resumir toda la ventana lo mejoran. Con las variables del artículo de referencia, tampoco lo mejoran más sujetos de entrenamiento ni su escala temporal de 240~Hz. Los errores restantes son, sobre todo, de frontera entre actividades breves y consecutivas; la confusión entre actividades de piso y de mesa es baja ($\le 4$\,\%) y se concentra en levantar desde el piso frente a levantar desde la mesa.
 
 \subsection{Limitaciones}
-Estos resultados deben leerse con varias limitaciones. La principal es que \textbf{la prueba final es pequeña y no del todo ciega}. Sólo incluye a dos personas, así que confirma el orden de magnitud del LOSO, pero no permite comparar modelos con significancia. Además, el subconjunto EML se eligió con el LOSO de los sujetos 1--12, y los sujetos 13 y 14 no llegaron completamente ciegos a la prueba: un notebook exploratorio temprano mostró sus resultados, y la réplica del protocolo del artículo (Sección~\ref{sec:complementarias}) los incluyó, aunque con otro conjunto de variables.
+Estos resultados deben leerse con varias limitaciones. La principal es que \textbf{la prueba final es pequeña y no del todo ciega}. Sólo incluye a dos personas, así que confirma el orden de magnitud del LOSO, pero no permite comparar modelos con significancia. Además, el subconjunto EML se eligió con el LOSO de los sujetos 1--12, y los sujetos 13 y 14 no llegaron completamente ciegos a la prueba: un análisis exploratorio temprano mostró sus resultados, y la réplica del protocolo del artículo (Sección~\ref{sec:complementarias}) los incluyó, aunque con otro conjunto de variables.
 
 Por otra parte, la mayoría de las comparaciones entre redes usan \textbf{una sola semilla}, de modo que diferencias de $\pm 0.01$ pueden ser ruido; la LSTM desde cero llegó a variar de 0.61 a 0.86 en un mismo sujeto según la semilla y la parada temprana. La \textbf{población es, además, pequeña y homogénea}: 14 adultos jóvenes en laboratorio, de los que sólo dos son mujeres. Aunque el desempeño ya no mejora con más sujetos del mismo protocolo, eso no garantiza que el modelo generalice a otras poblaciones o entornos de trabajo.
 
@@ -559,7 +560,7 @@ También el \textbf{escenario de pocas etiquetas está idealizado}. Las ventanas
 \subsection{Trabajo futuro}
 \begin{itemize}
   \item Ampliar la prueba final a más personas, idealmente trabajadores en condiciones de planta.
-  \item Ejecutar el barrido de duración de ventana, horizonte de predicción y dimensiones latentes, con su visualización t-SNE, que ya está preparado (notebook~13), y confirmar las configuraciones finalistas con tres semillas.
+  \item Ejecutar el barrido de duración de ventana, horizonte de predicción y dimensiones latentes, con su visualización t-SNE, que ya está preparado, y confirmar las configuraciones finalistas con tres semillas.
   \item Usar ventanas o etiquetas acordes a la duración de las acciones ($\approx 2$~s) para atacar los errores de frontera.
   \item Medir la sensibilidad del sistema de 11 sensores a ruido, deriva y desfase de calibración.
   \item Explorar \emph{Contrastive Active Inference} \parencite{mazzaglia2021} como alternativa autosupervisada a CPC, con el mismo protocolo.
@@ -581,7 +582,7 @@ Se utilizó \textcite{anthropic2026claude} como apoyo para generar y optimizar e
 \begin{table}[H]
   \centering
   \small
-  \caption{Las 30 variables MVNX usadas desde el Avance~4. En negritas, las 10 del subconjunto EML del modelo final.}
+  \caption{Las 30 variables MVNX usadas en los modelos de movimiento. En negritas, las 10 del subconjunto EML del modelo final.}
   \begin{tabular}{p{3.0cm}p{8.2cm}p{3.0cm}}
     \toprule
     Categoría & Variables & Grupo de sensores \\
@@ -604,7 +605,7 @@ Se utilizó \textcite{anthropic2026claude} como apoyo para generar y optimizar e
     \toprule
     Experimento & Resultado y motivo del descarte \\
     \midrule
-    CPC sobre sEMG con GRU, LSTM, sLSTM y mLSTM; horizontes, tipos de negativos y 12 o 25~Hz (notebooks~01--07) & Mejor configuración: sLSTM, horizonte de 1~s y negativos del mismo sujeto, con F1 0.437. La señal limitaba el resultado. \\
+    CPC sobre sEMG con GRU, LSTM, sLSTM y mLSTM; horizontes, tipos de negativos y 12 o 25~Hz & Mejor configuración: sLSTM, horizonte de 1~s y negativos del mismo sujeto, con F1 0.437. La señal limitaba el resultado. \\
     sEMG + movimiento & 0.880 contra 0.885 con movimiento solo; la sEMG no aportó. \\
     LSTM con CPC y ajuste fino original & 0.747; el ajuste fino deformó la representación (motivó LP-FT). \\
     mLSTM y CNN 1D desde cero & 0.862 y 0.801, por debajo de la GRU con CPC. \\
@@ -665,7 +666,7 @@ Se utilizó \textcite{anthropic2026claude} como apoyo para generar y optimizar e
 \begin{table}[H]
   \centering
   \small
-  \caption{Comparación con \textcite{bassani2025}. Las filas de este proyecto usan las 10 señales del artículo, salvo la partición aleatoria (10 variables EML). La media es el F1 macro promedio de los sujetos evaluados; la última columna, el F1 del sujeto~11. Fuente: notebooks~12 y~16, y Tabla~4 de \textcite{bassani2025}.}
+  \caption{Comparación con \textcite{bassani2025}. Las filas de este proyecto usan las 10 señales del artículo, salvo la partición aleatoria (10 variables EML). La media es el F1 macro promedio de los sujetos evaluados; la última columna, el F1 del sujeto~11. Fuente de la BiLSTM: Tabla~4 de \textcite{bassani2025}.}
   \label{tab:bassani_resumen}
   \begin{tabular}{l>{\raggedright\arraybackslash}p{5.6cm}cc}
     \toprule
@@ -685,7 +686,7 @@ Se utilizó \textcite{anthropic2026claude} como apoyo para generar y optimizar e
   \end{tabular}
 \end{table}
 
-Para comparar con \textcite{bassani2025} en condiciones cercanas a las suyas (Tabla~\ref{tab:protocolos}), se repitió la evaluación con su conjunto de 10 señales (8 de movimiento y 2 de sEMG) y con la CPC-GRU de la Sección~\ref{sec:cpc}, a 12~Hz y con ventanas de 4~s (notebook~12). En el LOSO de los sujetos 1--12, este modelo obtuvo $0.880 \pm 0.033$, el mismo nivel que con las 30 variables de movimiento (Sección~\ref{sec:fuente}).
+Para comparar con \textcite{bassani2025} en condiciones cercanas a las suyas (Tabla~\ref{tab:protocolos}), se repitió la evaluación con su conjunto de 10 señales (8 de movimiento y 2 de sEMG) y con la CPC-GRU de la Sección~\ref{sec:cpc}, a 12~Hz y con ventanas de 4~s. En el LOSO de los sujetos 1--12, este modelo obtuvo $0.880 \pm 0.033$, el mismo nivel que con las 30 variables de movimiento (Sección~\ref{sec:fuente}).
 
 Como el artículo entrena con 13 sujetos y nuestro LOSO con 10, primero se midió cuánto pesa esa diferencia. Al entrenar con 4, 6, 8 y 10 personas, el F1 fue de 0.826, 0.852, 0.868 y 0.880, de modo que cada par de sujetos adicional aporta cada vez menos. Con 12 y 13 personas la curva ya se aplana (0.882 y 0.879; 13 frente a 10 sujetos: $-0.001$, $p = 0.85$). Por lo tanto, más personas del mismo protocolo ya no mejorarían este modelo, y los 3 sujetos de diferencia no explican por sí solos una brecha con el artículo.
 
@@ -694,7 +695,7 @@ A continuación se replicó su protocolo: cada uno de los 14 sujetos se evaluó 
 \begin{table}[H]
   \centering
   \small
-  \caption{F1 por actividad en el sujeto~11, entrenando con los otros 13 sujetos. Ambos modelos usan las 10 señales del artículo; la CPC-GRU, a 12~Hz con ventanas de 4~s. Fuente: notebook~12 (sección~10) y Tabla~4 de \textcite{bassani2025}.}
+  \caption{F1 por actividad en el sujeto~11, entrenando con los otros 13 sujetos. Ambos modelos usan las 10 señales del artículo; la CPC-GRU, a 12~Hz con ventanas de 4~s. Fuente de la BiLSTM: Tabla~4 de \textcite{bassani2025}.}
   \label{tab:sujeto11}
   \setlength{\tabcolsep}{5pt}
   \begin{tabular}{lcccccccc}
