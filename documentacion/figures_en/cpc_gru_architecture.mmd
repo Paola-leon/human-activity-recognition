@@ -1,0 +1,17 @@
+flowchart TB
+    X["<b>Input window</b><br/>10 variables × 48 steps<br/>(4 s at 12 Hz)"] --> ENC["<b>Causal encoder</b><br/>3 Conv1d: 32 → 64 → 128<br/>looks only at the past"]
+    ENC --> Z["<b>z<sub>t</sub></b><br/>128 per step<br/>local movement"]
+    Z --> GRU["<b>GRU</b><br/>2 layers × 256"]
+    GRU --> C["<b>c<sub>t</sub></b><br/>256 per step<br/>summary of the history"]
+    C -- "Phase 1 · no labels" --> PRED["<b>CPC predictor</b><br/>predicts z<sub>t+1</sub> … z<sub>t+12</sub> (1 s ahead)<br/>InfoNCE, negatives from the same person<br/><i>discarded after pretraining</i>"]
+    C -- "Phase 2 · with labels" --> HEAD["<b>Linear head on c<sub>T</sub></b><br/>(last instant)<br/>LP-FT: head first, then whole network"]
+    HEAD --> Y["<b>Activity</b><br/>N · LF · K · PT · LT · W · PF"]
+
+    classDef pre fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef head fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef aux fill:#f3f4f6,stroke:#9ca3af,color:#4b5563,stroke-dasharray:4 3
+    classDef io fill:#ffffff,stroke:#6b7280,color:#111827
+    class ENC,Z,GRU,C pre
+    class HEAD,Y head
+    class PRED aux
+    class X io

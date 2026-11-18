@@ -1,0 +1,17 @@
+flowchart TB
+    U["<b>Step 1 · no labels</b><br/>10 training subjects<br/>all recordings, unlabeled"] --> CPC["CPC pretraining<br/>encoder + GRU<br/>(once per round)"]
+    L["<b>Step 2 · few labels</b><br/>n labeled windows per activity<br/>n = 1, 2, 5, 10, 25, 50, 100<br/>same windows for every model"]
+    CPC -- "pretrained weights" --> WITH["<b>With CPC</b><br/>frozen + linear<br/>frozen + MLP<br/>LP-FT"]
+    L --> WITH
+    L --> WITHOUT["<b>Without CPC</b><br/>Random Forest (competitor)<br/>network from scratch (control)<br/>random encoder (control)"]
+    WITH --> E["<b>Evaluation</b><br/>held-out subject, all its windows<br/>→ macro F1"]
+    WITHOUT --> E
+
+    classDef pre fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef head fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef tab fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef aux fill:#f3f4f6,stroke:#9ca3af,color:#4b5563
+    class U,CPC pre
+    class L,WITH head
+    class WITHOUT tab
+    class E aux
