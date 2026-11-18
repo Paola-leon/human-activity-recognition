@@ -6,7 +6,9 @@ Póster A1 horizontal basado en la plantilla institucional (`poster_plantilla.te
 |---|---|
 | `poster_proyecto.tex` | Fuente del póster del equipo |
 | `poster_proyecto.pdf` | Póster compilado |
+| `poster_proyecto_en.tex`, `poster_proyecto_en.pdf` | Versión en inglés (mismo diseño) |
 | `fig_ventana.png`, `fig_pocas.png` | Figuras 1 y 4, generadas con `generar_figuras.py` |
+| `fig_ventana_en.png`, `fig_pocas_en.png` | Las mismas figuras en inglés (mismo script) |
 | `logo.jpeg`, `logo_der.png` | Logos del Tec y de la Scuola Superiore Sant'Anna |
 | `poster_plantilla.tex`, `poster.pdf` | Plantilla original y su PDF de ejemplo (sólo referencia) |
 
@@ -19,6 +21,7 @@ Póster A1 horizontal basado en la plantilla institucional (`poster_plantilla.te
 ```bash
 cd Poster
 latexmk -pdf poster_proyecto.tex
+latexmk -pdf poster_proyecto_en.tex   # versión en inglés
 latexmk -c        # borra los archivos auxiliares
 ```
 

@@ -45,6 +45,13 @@
 \definecolor{ink}{HTML}{1A1A10}
 \definecolor{muted}{HTML}{6B6B5E}
 \definecolor{pagebg}{HTML}{FFFFFF}
+% Grises y azul pizarra de las figuras (generar_figuras.py)
+\definecolor{graysoft}{HTML}{E6E4DE}
+\definecolor{slatedark}{HTML}{1F2A36}
+% Figura 2: rampa salvia (verde azulado) de claro a oscuro; distinguible con daltonismo (ΔE OKLab >= 16)
+\definecolor{salvia1}{HTML}{A8C5BD}
+\definecolor{salvia2}{HTML}{5F958A}
+\definecolor{salvia3}{HTML}{2E5E56}
 
 \pagecolor{pagebg}
 \color{ink}
@@ -71,16 +78,16 @@
 \newcommand{\pie}[1]{{\sffamily\fontsize{18}{22}\selectfont\color{muted}#1}}
 
 \newcommand{\circulo}[1]{%
-  \tikz\node[circle,fill=olivesoft,minimum size=6cm,align=center,
-    text width=5cm,text=olivedark,
+  \tikz\node[circle,fill=graysoft,minimum size=6cm,align=center,
+    text width=5cm,text=slatedark,
     font=\sffamily\bfseries\fontsize{19}{23}\selectfont]{#1};}
 
 % Tarjeta de cifra: \cifra{ancho}{valor}{descripción}
 \newcommand{\cifra}[3]{%
   \begin{minipage}[t]{#1}
-  \begin{tcolorbox}[colback=olivesoft,colframe=olivesoft,arc=4pt,boxrule=0pt,
+  \begin{tcolorbox}[colback=graysoft,colframe=graysoft,arc=4pt,boxrule=0pt,
     width=\linewidth,left=6pt,right=6pt,top=6pt,bottom=6pt,halign=center,valign=center,height=4.6cm]
-    {\serif\fontsize{48}{52}\selectfont\color{olivedark}#2}\\[0.15em]
+    {\serif\fontsize{48}{52}\selectfont\color{slatedark}#2}\\[0.15em]
     {\sffamily\fontsize{18}{22}\selectfont\color{ink}#3}
   \end{tcolorbox}
   \end{minipage}}
@@ -164,7 +171,7 @@ Siempre con \textbf{personas nuevas}: 12 rondas dejando una fuera y 2 reservadas
 \seccion{Del músculo al movimiento}
 \begin{center}
 \begin{tikzpicture}[x=15cm,y=0.85cm]
-  \foreach \y/\lab/\v/\c in {2.4/sEMG/0.485/muted, 1.2/sEMG + movimiento/0.880/olive, 0/Movimiento/0.885/olivelink}{
+  \foreach \y/\lab/\v/\c in {2.4/sEMG/0.485/salvia1, 1.2/sEMG + movimiento/0.880/salvia2, 0/Movimiento (MVNX)/0.885/salvia3}{
     \fill[\c] (0,\y) rectangle (\v,\y+0.85);
     \node[anchor=east,font=\sffamily\fontsize{20}{24}\selectfont] at (0,\y+0.42) {\lab};
     \node[anchor=west,font=\sffamily\bfseries\fontsize{20}{24}\selectfont] at (\v,\y+0.42) {\v};
@@ -318,7 +325,7 @@ Siguiente paso: validar con trabajadores y un kit real de 11 sensores, y pasar d
 \noindent
 {\fontsize{18}{23}\selectfont\color{ink}
 {\serif\color{olivedark}\fontsize{22}{28}\selectfont Declaración de uso de inteligencia artificial.}
-Se utilizó Claude Code (Anthropic, 2026) para generar y optimizar el código de los experimentos y para redactar y dar formato a este póster; el equipo definió los experimentos y verificó las cifras.
+Se utilizó Claude Code (Anthropic, 2026) para dar formato a este póster.
 La responsabilidad final sobre el contenido entregado recae en los autores.\par}
 
 \end{document}
