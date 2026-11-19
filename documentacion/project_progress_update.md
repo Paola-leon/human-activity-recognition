@@ -23,8 +23,8 @@
 | # | Line of work | Answer in one sentence |
 |---|---|---|
 | 1 | Minimal sensors | 10 variables from **11 of 17 sensors** (`EML`) keep the performance. |
-| 2 | Few labels | With **≤ 10 labeled windows per activity**, CPC beats the Random Forest by +0.04 to +0.11 and needs **2.2× fewer labels**. |
-| 3 | Final model | CPC-GRU · `EML` · linear head: **0.873** in LOSO and **0.884 · 0.898** on the held-out subjects. |
+| 2 | Final model | CPC-GRU · `EML` · linear head: **0.873** in LOSO and **0.884 · 0.898** on the held-out subjects. |
+| 3 | Few labels | With **≤ 10 labeled windows per activity**, CPC beats the Random Forest by +0.04 to +0.11 and needs **2.2× fewer labels**. |
 | 4 | Reference article | With the variables of Bassani et al. we reach their level on their test subject (**0.910 vs. 0.903**). |
 | B | Windows and latents | No configuration clearly beats the current one (all within 0.871–0.887). |
 
@@ -52,30 +52,7 @@
 
 ---
 
-## 2. Few labels: CPC-GRU vs. Random Forest
-
-[`17_pocas_etiquetas_fs12`](../notebooks/17_pocas_etiquetas_fs12.ipynb) · [detailed summary](resumen_notebook_17_pocas_etiquetas.md)
-
-**Question.** With only a few labeled windows, does CPC, pretrained **without labels**, recognize a new person better than a Random Forest trained on the same labels?
-
-**Method.** In each LOSO round, CPC is pretrained on the unlabeled data; then every model gets the **same n labeled windows per activity** (n = 1 … 100, 10 repetitions). Two controls isolate the cause: the **same network from scratch** and a **random frozen encoder**.
-
-![Flow of one LOSO round in the few-labels experiment](figures_en/few_labels_flow.png)
-
-![Macro F1 vs. number of labeled windows per activity](figures_en/few_labels_curve.png)
-
-**Conclusions**
-
-- **CPC wins with ≤ 10 windows per activity** (7–70 labels in total), in 11–12 of 12 people. From 25 windows on, the difference is no longer significant; with all labels, the order reverses.
-- **≈ 2.2× fewer labels:** the Random Forest needs ≈ 11 and ≈ 22 windows to match CPC with 5 and 10.
-- **The gain comes from pretraining, not from the architecture:** the same network from scratch falls on the Random Forest curve (orange point).
-- **Where:** activities defined by how the movement evolves: `K` +0.26, `PT` +0.22, `LT` +0.13.
-
-*Limitations:* CPC hit the 20-epoch cap in 10 of 12 rounds; the sampling is idealized (balanced across activities).
-
----
-
-## 3. Final model
+## 2. Final model
 
 ### Variables
 
@@ -101,6 +78,27 @@
 ![Final model: LOSO vs. final test](figures_en/final_model_scores.png)
 
 The final test (trained on subjects 1–11, mean of 3 seeds) falls **within the LOSO range**: the model generalizes to people never used during development.
+
+---
+
+## 3. Few labels: CPC-GRU vs. Random Forest
+
+[`17_pocas_etiquetas_fs12`](../notebooks/17_pocas_etiquetas_fs12.ipynb) · [detailed summary](resumen_notebook_17_pocas_etiquetas.md)
+
+**Question.** With only a few labeled windows, does CPC, pretrained **without labels**, recognize a new person better than a Random Forest trained on the same labels?
+
+**Method.** In each LOSO round, CPC is pretrained on the unlabeled data; then every model gets the **same n labeled windows per activity** (n = 1 … 100, 10 repetitions). To check that the advantage comes from pretraining, we also compared CPC with **the same network without pretraining** and with **a frozen network of random weights**; neither matches CPC.
+
+![Flow of one LOSO round in the few-labels experiment](figures_en/few_labels_flow.png)
+
+![Macro F1 vs. number of labeled windows per activity](figures_en/few_labels_curve.png)
+
+**Conclusions**
+
+- **CPC wins with ≤ 10 windows per activity** (7–70 labels in total), in 11–12 of 12 people. From 25 windows on, the difference is no longer significant; with all labels, the order reverses.
+- **≈ 2.2× fewer labels:** the Random Forest needs ≈ 11 and ≈ 22 windows to match CPC with 5 and 10.
+- **The gain comes from pretraining, not from the architecture:** the same network from scratch falls on the Random Forest curve (orange point).
+- **Where it wins:** in activities that differ in the order of the movement rather than in posture, such as `K` (+0.26), `PT` (+0.22) and `LT` (+0.13); placing on the table and lifting from it look alike but run in opposite directions.
 
 ---
 
