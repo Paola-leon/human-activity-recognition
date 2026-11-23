@@ -87,3 +87,6 @@ Poster/*.fls
 Poster/*.log
 Poster/*.out
 Poster/*.synctex.gz
+
+# Archivos de bloqueo de LibreOffice
+.~lock.*#
