@@ -1,0 +1,26 @@
+flowchart TB
+    subgraph A["Este proyecto: CPC-GRU"]
+        direction TB
+        A1["Ventana 4 s · 12 Hz<br/>10 variables (EML)"] --> A2["Encoder causal<br/>3 Conv1d (32/64/128)"]
+        A2 --> A3["GRU 2 × 256<br/>(causal, un sentido)"]
+        A3 --> A4["Fase 1: CPC sin etiquetas<br/>Fase 2: cabeza lineal + LP-FT"]
+    end
+    subgraph H["Haresamudram et al. (2021): CPC para HAR"]
+        direction TB
+        H1["Ventanas de señales crudas<br/>de sensores inerciales"] --> H2["Encoder<br/>3 Conv1d (32/64/128)"]
+        H2 --> H3["GRU 2 × 256"]
+        H3 --> H4["Fase 1: CPC sin etiquetas<br/>Fase 2: MLP (capas ocultas de 256 y 128)<br/>sobre la red congelada"]
+    end
+    subgraph B["Bassani et al. (2025): BiLSTM"]
+        direction TB
+        B1["Ventana 1 s · 240 Hz<br/>10 señales (8 movimiento + 2 sEMG)"] --> B2["BiLSTM 300 unidades<br/>(lee la ventana en los dos sentidos;<br/>salida: último estado)"]
+        B2 --> B3["Capa totalmente conectada → 7<br/>softmax"]
+        B3 --> B4["Supervisado de extremo a extremo<br/>sin preentrenamiento"]
+    end
+
+    classDef ours fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef har fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef bas fill:#fef3c7,stroke:#d97706,color:#78350f
+    class A1,A2,A3,A4 ours
+    class H1,H2,H3,H4 har
+    class B1,B2,B3,B4 bas

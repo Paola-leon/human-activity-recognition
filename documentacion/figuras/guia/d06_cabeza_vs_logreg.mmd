@@ -1,0 +1,24 @@
+flowchart TB
+    CT["<b>c<sub>T</sub></b> · 256 números de la ventana<br/>(último estado de la GRU)"]
+    subgraph H["Cabeza lineal del modelo final (PyTorch)"]
+        direction TB
+        H1["LayerNorm<br/>normaliza los 256 números de cada ventana<br/>(512 parámetros)"] --> H2["Dropout 0.2<br/>(sólo al entrenar)"]
+        H2 --> H3["Linear: 7 puntajes = W·x + b<br/>(1,799 parámetros)"]
+        H3 --> H4["softmax → 7 probabilidades"]
+        H4 --> H5["se entrena por gradiente (AdamW)<br/>y luego se ajusta JUNTO con la red (FT)"]
+    end
+    subgraph R["Regresión logística (scikit-learn)"]
+        direction TB
+        R1["StandardScaler<br/>normaliza cada una de las 256 dimensiones<br/>con media y desviación del entrenamiento"] --> R2["7 puntajes = W·x + b<br/>(mismo tamaño)"]
+        R2 --> R3["softmax → 7 probabilidades"]
+        R3 --> R4["se resuelve con un optimizador convexo<br/>+ regularización L2 (C)<br/>la red queda fija"]
+    end
+    CT --> H1
+    CT --> R1
+
+    classDef pre fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef head fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef lr fill:#dcfce7,stroke:#16a34a,color:#14532d
+    class CT pre
+    class H1,H2,H3,H4,H5 head
+    class R1,R2,R3,R4 lr

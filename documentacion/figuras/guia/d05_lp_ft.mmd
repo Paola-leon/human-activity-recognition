@@ -1,0 +1,13 @@
+flowchart TB
+    P["<b>Red preentrenada con CPC</b><br/>encoder + GRU"] --> LP["<b>LP · Linear Probing</b><br/>encoder y GRU CONGELADOS<br/>se entrena sólo la cabeza lineal<br/>AdamW, tasa 1e-3, hasta 20 épocas (paciencia 3)<br/>entropía cruzada con pesos por clase"]
+    LP --> FT["<b>FT · Fine-Tuning</b><br/>se descongela TODO, partiendo de la cabeza de LP<br/>red: tasa 1e-4 · cabeza: tasa 1e-3<br/>hasta 30 épocas (paciencia 5)"]
+    FT --> V{"F1 macro en el sujeto<br/>de validación interna<br/>después de cada época"}
+    V -- "otra época" --> FT
+    V -- "5 épocas sin mejorar" --> BEST["Se queda la mejor época<br/>(época 0 = el modelo de LP:<br/>el FT no puede empeorarlo)"]
+
+    classDef pre fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef head fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef ev fill:#dcfce7,stroke:#16a34a,color:#14532d
+    class P pre
+    class LP,FT head
+    class V,BEST ev

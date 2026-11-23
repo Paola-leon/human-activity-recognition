@@ -1,0 +1,17 @@
+flowchart LR
+    CT["<b>c<sub>t</sub></b><br/>contexto de la ventana A<br/>en el instante t"] --> W["<b>W<sub>k</sub> · c<sub>t</sub></b><br/>predicción de<br/>cómo será z<sub>t+k</sub>"]
+    W --> S{"<b>¿cuál es el futuro real?</b><br/>puntaje = similitud<br/>(producto punto)"}
+    P["<b>z<sub>t+k</sub> de la ventana A</b><br/>(futuro real: positivo)"] --> S
+    N1["z<sub>t+k</sub> de la ventana B<br/>(misma persona: negativo)"] --> S
+    N2["z<sub>t+k</sub> de la ventana C<br/>(misma persona: negativo)"] --> S
+    N3["… 127 negativos<br/>del mismo lote de 128"] --> S
+    S --> L["<b>InfoNCE</b><br/>entropía cruzada: premia dar<br/>el puntaje más alto al positivo"]
+
+    classDef pre fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef pos fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef neg fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    classDef aux fill:#fef3c7,stroke:#d97706,color:#78350f
+    class CT,W pre
+    class P pos
+    class N1,N2,N3 neg
+    class S,L aux

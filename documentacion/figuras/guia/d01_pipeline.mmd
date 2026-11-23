@@ -1,0 +1,20 @@
+flowchart TB
+    A["<b>1 · Datos de Zenodo</b><br/>14 personas · 37 ensayos c/u<br/>MVNX (traje Xsens, 240 Hz) + sEMG"] --> B["<b>2 · Sincronización</b><br/>alinear relojes MVNX y sEMG<br/>con eventos de las etiquetas"]
+    B --> C["<b>3 · Submuestreo temporal</b><br/>pasa-bajas 4.8 Hz → 12 Hz"]
+    C --> D["<b>4 · Variables físicas</b><br/>30 variables → subconjunto EML (10)"]
+    D --> E["<b>5 · Ventanas</b><br/>4 s (48 pasos), una cada 0.5 s<br/>etiqueta = actividad del último instante"]
+    E --> F["<b>6 · LOSO (sujetos 1–12)</b><br/>por ronda: 10 entrenan · 1 valida · 1 se prueba"]
+    F --> G["<b>7 · Escalado robusto</b><br/>ajustado sólo con los 10 de entrenamiento"]
+    G --> H["<b>8 · Modelo</b><br/>CPC sin etiquetas → LP-FT con etiquetas<br/>(o Random Forest, como referencia)"]
+    H --> I["<b>9 · Evaluación</b><br/>F1 macro del sujeto de prueba<br/>media, desviación y peor de 12 sujetos"]
+    I --> J["<b>10 · Comparación</b><br/>Wilcoxon pareado por sujeto<br/>(+ Holm si hay muchas comparaciones)"]
+    J --> K["<b>11 · Prueba final</b><br/>modelo congelado → sujetos 13 y 14, una sola vez"]
+
+    classDef dat fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef pre fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef mod fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef ev fill:#dcfce7,stroke:#16a34a,color:#14532d
+    class A,B,C,D,E dat
+    class F,G pre
+    class H mod
+    class I,J,K ev

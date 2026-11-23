@@ -1,0 +1,17 @@
+flowchart TB
+    X["<b>Ventana de entrada</b><br/>10 variables × 48 pasos<br/>(4 s a 12 Hz)"] --> ENC["<b>Encoder causal</b><br/>3 Conv1d: 10 → 32 → 64 → 128<br/>núcleo 3, ReLU, dropout 0.2<br/>sólo mira el pasado"]
+    ENC --> Z["<b>z<sub>t</sub></b> · 128 números por paso<br/>describe el movimiento local"]
+    Z --> GRU["<b>GRU</b> · 2 capas × 256<br/>lee la ventana paso a paso"]
+    GRU --> C["<b>c<sub>t</sub></b> · 256 números por paso<br/>resume la historia hasta t"]
+    C -- "Fase 1 · SIN etiquetas" --> PRED["<b>Predictor CPC</b><br/>W<sub>1</sub> … W<sub>12</sub>: predice z<sub>t+1</sub> … z<sub>t+12</sub><br/>pérdida InfoNCE<br/><i>se descarta al terminar</i>"]
+    C -- "Fase 2 · CON etiquetas" --> HEAD["<b>Cabeza lineal sobre c<sub>T</sub></b><br/>(el último instante)<br/>normalización → Linear 256 → 7"]
+    HEAD --> Y["<b>Actividad</b><br/>N · LF · K · PT · LT · W · PF"]
+
+    classDef pre fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef head fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef aux fill:#f3f4f6,stroke:#9ca3af,color:#4b5563,stroke-dasharray:4 3
+    classDef io fill:#ffffff,stroke:#6b7280,color:#111827
+    class ENC,Z,GRU,C pre
+    class HEAD,Y head
+    class PRED aux
+    class X io
